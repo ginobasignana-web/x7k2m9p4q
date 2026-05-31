@@ -940,7 +940,7 @@ function enterDashboard() {
   <button class="tb-tog" onclick="toggleSB()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
   <div class="tb-title" id="tb-title">Liga Nacional 2025/26</div>
   <div id="liga-logo-topbar" style="display:flex;align-items:center;flex-shrink:0;"></div>
-  <span class="tb-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>28/05/2026 11:07</span>
+  <span class="tb-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><script>document.write(new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}));</script></span>
   <button class="tb-btn" onclick="toggleTheme()" id="theme-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</button>
   <button class="tb-btn" onclick="PS.start()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Presentación</button>
   <button class="tb-btn pri" onclick="window.print()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>PDF</button>
@@ -6664,26 +6664,34 @@ function renderRAT() {
   // TABLA
   h += '<div style="background:'+S+';border-radius:10px;padding:16px;margin-bottom:14px;border:1px solid '+G+';">';
   h += '<div style="font-size:10px;color:'+GOLD+';letter-spacing:2px;margin-bottom:10px;font-weight:700;">TABLA DE POSICIONES</div>';
-  h += '<table style="width:100%;border-collapse:collapse;font-size:9px;table-layout:fixed;"><thead><tr style="color:'+DIM+';font-size:10px;">';
-  ['#','EQUIPO','PJ','PG','PP','WIN%','DIF','GB'].forEach(function(col){
-    h += '<th style="text-align:'+(col==='EQUIPO'?'left':'center')+';padding:4px 6px;">'+col+'</th>';
+  h += '<table style="width:100%;border-collapse:collapse;font-size:9px;table-layout:fixed;">';
+  h += '<colgroup><col style="width:22px"><col style="width:22%"><col style="width:22px"><col style="width:26px"><col style="width:26px"><col style="width:26px"><col style="width:26px"><col style="width:26px"><col style="width:26px"><col style="width:32px"><col style="width:32px"><col style="width:30px"><col style="width:28px"><col style="width:30px"><col style="width:30px"></colgroup>';
+  h += '<thead><tr style="color:'+DIM+';font-size:8px;border-bottom:1px solid '+G+';">';
+  ['#','EQUIPO','PJ','PG','PP','PGL','PPL','PGV','PPV','PF','PC','DIF','%','PF/P','PC/P'].forEach(function(col){
+    h += '<th style="text-align:'+(col==='EQUIPO'?'left':'center')+';padding:4px 2px;overflow:hidden;white-space:nowrap;">'+col+'</th>';
   });
   h += '</tr></thead><tbody>';
   tabla.forEach(function(r,i){
     const isEq=r.Equipo===eq;
-    const leader=tabla[0];
-    const gb=i===0?'-':((leader.PG-r.PG+r.PP-leader.PP)/2).toFixed(1);
     const wp=Math.round((r.PG||0)/(r.PJ||1)*100);
     const dif=(r.Dif||0)>=0?'+'+(r.Dif||0):(r.Dif||0);
-    h += '<tr style="border-bottom:1px solid '+B+';'+(isEq?'background:rgba(200,167,77,0.1);':'')+'">';
-    h += '<td style="padding:5px 6px;color:'+(isEq?GOLD:DIM)+';font-weight:700;">'+r.Pos+'</td>';
-    h += '<td style="padding:5px 6px;font-weight:'+(isEq?'800':'400')+';color:'+(isEq?'#fff':TXT)+';">'+r.Equipo+'</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:'+SUB+';">'+r.PJ+'</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:#10b981;font-weight:700;">'+r.PG+'</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:#ef4444;">'+r.PP+'</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:'+(wp>=50?'#10b981':'#ef4444')+';font-weight:700;">'+wp+'%</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:'+((r.Dif||0)>=0?'#10b981':'#ef4444')+';">'+dif+'</td>';
-    h += '<td style="text-align:center;padding:5px 6px;color:'+DIM+';">'+gb+'</td></tr>';
+    const p='padding:3px 2px;text-align:center;font-size:9px;overflow:hidden;';
+    h += '<tr style="border-bottom:1px solid rgba(255,255,255,.04);'+(isEq?'background:rgba(200,167,77,0.1);':'')+'">';
+    h += '<td style="'+p+'color:'+(isEq?GOLD:DIM)+';font-weight:700;">'+r.Pos+'</td>';
+    h += '<td style="padding:3px 4px;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:'+(isEq?'700':'400')+';color:'+(isEq?GOLD:TXT)+';">'+r.Equipo+'</td>';
+    h += '<td style="'+p+'color:'+SUB+';">'+r.PJ+'</td>';
+    h += '<td style="'+p+'color:#10b981;font-weight:700;">'+r.PG+'</td>';
+    h += '<td style="'+p+'color:#ef4444;">'+r.PP+'</td>';
+    h += '<td style="'+p+'">'+(r.PG_L||'-')+'</td>';
+    h += '<td style="'+p+'">'+(r.PP_L||'-')+'</td>';
+    h += '<td style="'+p+'">'+(r.PG_V||'-')+'</td>';
+    h += '<td style="'+p+'">'+(r.PP_V||'-')+'</td>';
+    h += '<td style="'+p+'">'+(r.PTS_F||r.PF_PP&&Math.round(r.PF_PP*r.PJ)||'-')+'</td>';
+    h += '<td style="'+p+'">'+(r.PTS_C||r.PC_PP&&Math.round(r.PC_PP*r.PJ)||'-')+'</td>';
+    h += '<td style="'+p+'color:'+((r.Dif||0)>=0?'#10b981':'#ef4444')+';">'+dif+'</td>';
+    h += '<td style="'+p+'color:'+(wp>=50?'#10b981':'#ef4444')+';font-weight:700;">'+wp+'%</td>';
+    h += '<td style="'+p+'">'+n(r.PF_PP)+'</td>';
+    h += '<td style="'+p+'">'+n(r.PC_PP)+'</td></tr>';
   });
   h += '</tbody></table></div>';
 
