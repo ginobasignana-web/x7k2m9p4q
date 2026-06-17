@@ -1374,6 +1374,7 @@ function enterDashboard() {
      <div id="cl-insights" style="margin-bottom:8px;"></div>
      <div id="cl-insights" style="margin-bottom:8px;"></div>
      <div id="cl-insights" style="margin-bottom:8px;"></div>
+     <div id="cl-insights" style="margin-bottom:8px;"></div>
      <div class="tw" style="max-height:480px;overflow-y:auto;"><table><thead><tr>
         <th style="text-align:left;">Jugador</th><th style="text-align:left;">Equipo</th>
         <th title="Partidos donde estos 5 coincidieron en cancha">PJ ⓘ</th><th>MIN</th><th>PTS</th><th>REB</th><th>REBO</th><th>AST</th>
@@ -3441,6 +3442,12 @@ function pppCorr(pts, min) {
   return Math.round((parseFloat(pts)||0) / pos * 100) / 100;
 }
 
+function pppCorr(pts, min) {
+  var pos = (parseFloat(min)||0) * 70 / 40;
+  if (pos < 1) return 0;
+  return Math.round((parseFloat(pts)||0) / pos * 100) / 100;
+}
+
 function renderQ() {
   const eq   = document.getElementById('quint-eq').value;
   const filt = arr => eq ? arr.filter(r=>r.Equipo===eq) : arr;
@@ -4681,7 +4688,7 @@ window.addEventListener('load', () => {
   })();
 
   // PASO 2: Funciones livianas — inmediato
-  try { document.getElementById('tb-fecha').textContent = '17/06/2026 13:33'; } catch(e) {}
+  try { document.getElementById('tb-fecha').textContent = '17/06/2026 13:36'; } catch(e) {}
 
   // Logo liga en topbar
   try {
@@ -4699,6 +4706,7 @@ window.addEventListener('load', () => {
     requestAnimationFrame(() => {
       try { initPosiciones(); } catch(e) { console.warn('initPosiciones:', e); }
       try { initClutch(); } catch(e) { console.warn('initClutch:', e); }
+      try { const s2=document.getElementById('scatter-eq2'); if(s2&&s2.options.length<=1){[...new Set((DATA.jug_prom||[]).map(r=>r.Equipo))].sort().forEach(e=>{s2.innerHTML+='<option value="'+e+'">'+e+'</option>';});} } catch(e) {}
       try { const s2=document.getElementById('scatter-eq2'); if(s2&&s2.options.length<=1){[...new Set((DATA.jug_prom||[]).map(r=>r.Equipo))].sort().forEach(e=>{s2.innerHTML+='<option value="'+e+'">'+e+'</option>';});} } catch(e) {}
       try { const s2=document.getElementById('scatter-eq2'); if(s2&&s2.options.length<=1){[...new Set((DATA.jug_prom||[]).map(r=>r.Equipo))].sort().forEach(e=>{s2.innerHTML+='<option value="'+e+'">'+e+'</option>';});} } catch(e) {}
       try { const s2=document.getElementById('scatter-eq2'); if(s2&&s2.options.length<=1){[...new Set((DATA.jug_prom||[]).map(r=>r.Equipo))].sort().forEach(e=>{s2.innerHTML+='<option value="'+e+'">'+e+'</option>';});} } catch(e) {}
