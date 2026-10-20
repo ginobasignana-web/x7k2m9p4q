@@ -5445,7 +5445,7 @@ function generarReporteJugador() {
 function initCoach() {
   const c = document.getElementById('coach-content');
   if (!c) return;
-  const coaches = (DATA.coaches||[]).filter(r=>r.PJ>=5);
+  const coaches = (DATA.coaches||[]).filter(r=>r.PJ>=Math.min(5,Math.max(1,Math.ceil((DATA.coaches||[]).reduce(function(m,c){return Math.max(m,parseInt(c.PJ)||0);},0)/2))));
   if (!coaches.length) { c.innerHTML='<div style="padding:40px;text-align:center;color:var(--txt3);">Sin datos de coaches.</div>'; return; }
 
   let selectedCoach = null;
