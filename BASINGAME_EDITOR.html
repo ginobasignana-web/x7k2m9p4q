@@ -595,6 +595,11 @@ body.drawing #bDraw{background:var(--ac);color:#fff}
 .hmm{position:relative}
 .hmball{position:absolute;right:40px;bottom:16px;width:54px;height:auto;filter:drop-shadow(0 3px 8px #000a);pointer-events:none}
 @media(max-height:560px){.hmball{display:none}}
+
+.adjb{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;border:1px solid #c9a24a;color:#c9a24a;font-size:10px;letter-spacing:.04em;text-transform:uppercase}
+.ptg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ptc label{display:block;font-size:11px;opacity:.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.ptr{display:flex;gap:4px;align-items:center}.ptr input{width:76px;text-align:center}
+tr.prow{cursor:pointer}
 </style>
 </head>
 <body>
@@ -1484,13 +1489,15 @@ async function runExport(pend){
   const E=expState(),plan=pend?pend.items:expPlan();
   if(!plan.some(x=>x.k==='clip')){if(msgEl)msgEl.textContent='No hay clips tildados en la lista. Armá la lista en la pestaña Lista / Montaje.';return}
   if(!pickMime()){if(msgEl)msgEl.textContent='Este navegador no puede grabar video. Usá Chrome actualizado.';return}
+  const dest=await pickDest('BVA_'+safe((expState().cover.title)||S.proj.name||'Analisis'));
+  if(dest==='cancel'){if(msgEl)msgEl.textContent='Exportación cancelada: no elegiste destino.';return}
   OV_CTX='proj';
   const c=E.cover,items=plan.map(x=>x.k==='clip'?{k:'clip',a:x.a,video:Pl.v,notes:S.proj.notes}:x);
   EXP.busy=true;EXP.abort=false;stopClip();
   const r=await recordSequence({items,size:E.size,q:E.q,ov:Object.assign({},curOv()),cover:{on:pend?false:c.on,dur:c.dur,title:c.title||S.proj.name||'Análisis',sub:c.sub,line:c.line},ui:{pg:'#expPg',msg:'#expMsg',go:'#expGo',goA:pend?'expGo2':'expGo',goT:'Exportar MP4'}});
   EXP.busy=false;
   if(r.aborted){const m=$('#expMsg');if(m)m.textContent='Exportación cancelada.';return}
-  downloadBlob(r,pend&&pend.name?pend.name:'BVA_'+safe(c.title||S.proj.name),'#expMsg');
+  await downloadBlob(r,pend&&pend.name?pend.name:'BVA_'+safe(c.title||S.proj.name),'#expMsg',dest);
 }
 function setX(path,val){
   const E=expState(),p=path.split('.');
@@ -1860,12 +1867,59 @@ async function recordSequence(o){
   const ext=mime.startsWith('video/mp4')?'mp4':'webm';
   return {blob:new Blob(chunks,{type:mime.split(';')[0]}),ext,mime};
 }
-function downloadBlob(r,name,msgSel){
+async function downloadBlob(r,name,msgSel,dest){
+  if(dest&&dest.h){
+    try{const w=await dest.h.createWritable();await w.write(r.blob);await w.close();
+      const msg=$(msgSel);if(msg)msg.innerHTML='Listo: guardado en <b>'+esc(dest.h.name)+'</b> ('+(r.blob.size/1e6).toFixed(1)+' MB) en el destino que elegiste.';return}
+    catch(e){}
+  }
   const url=URL.createObjectURL(r.blob),a=document.createElement('a');a.href=url;a.download=name+'.'+r.ext;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),500);
   const msg=$(msgSel);if(msg)msg.innerHTML='Listo: <b>'+esc(a.download)+'</b> ('+(r.blob.size/1e6).toFixed(1)+' MB) se descargó. '+(r.ext==='webm'?'Tu navegador grabó en WebM: abre en Chrome, VLC y PowerPoint.':'');
 }
 
 function fmtL(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),x=sec%60;return m?m+' min '+(x<10?'0':'')+x+' s':x+' s'}
+
+/* ===== Ajustar corte (doble clic en Presentaciones) ===== */
+let PT=null;
+function ptOpen(i){
+  const it=PRES.items[i];if(!it||it.slide)return;const r=resolveIt(it);if(!r.a)return;
+  const orig=r.p.actions.find(x=>x.id===it.aid);
+  PT={i,os:orig.start,oe:orig.end,s:r.a.start,e:r.a.end};
+  openModal(`<h3 style="margin:0 0 4px">Ajustar corte</h3>
+  <div class="muted" style="margin-bottom:12px">${esc(r.p.name||'Partido')} · <span class="dot" style="background:${r.a.color}"></span>${esc(r.a.cat)} #${r.a.n}<br>Solo cambia esta presentación: el análisis original no se toca.</div>
+  <div class="ptg">${['s','e'].map(f=>`<div class="ptc"><label>${f==='s'?'Inicio':'Fin'} (segundos)</label>
+    <div class="ptr"><button class="bt sm" data-a="ptN" data-f="${f}" data-d="-1">−1</button><button class="bt sm" data-a="ptN" data-f="${f}" data-d="-0.5">−0.5</button>
+    <input type="number" step="0.1" min="0" id="pt_${f}" value="${R2(PT[f])}">
+    <button class="bt sm" data-a="ptN" data-f="${f}" data-d="0.5">+0.5</button><button class="bt sm" data-a="ptN" data-f="${f}" data-d="1">+1</button></div></div>`).join('')}</div>
+  <div id="ptInfo" class="muted" style="margin:10px 0"></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="bt" data-a="ptSim">▶ Ver este corte</button><button class="bt" data-a="ptReset">Restaurar original</button><span class="sp"></span><button class="bt" data-a="closeM">Cancelar</button><button class="bt pri" data-a="ptSave">Guardar</button></div>`);
+  ptInfo();
+}
+function ptRead(){
+  if(!PT)return;const a=parseFloat(($('#pt_s')||{}).value),b=parseFloat(($('#pt_e')||{}).value);
+  if(isFinite(a))PT.s=Math.max(0,a);if(isFinite(b))PT.e=Math.max(0,b);ptInfo();
+}
+function ptInfo(){
+  const el=$('#ptInfo');if(!el||!PT)return;const ok=PT.e-PT.s>=0.2,d=R2(PT.e-PT.s);
+  el.innerHTML=ok?`Duración del corte: <b>${d} s</b> · original ${R2(PT.oe-PT.os)} s (${fmt1(PT.os)} – ${fmt1(PT.oe)})`:'<span style="color:#e57373">El fin debe ser al menos 0.2 s mayor que el inicio.</span>';
+}
+function ptSet(f,v){PT[f]=Math.max(0,R2(v));const i=$('#pt_'+f);if(i)i.value=PT[f];ptInfo()}
+function ptApply(){
+  ptRead();if(PT.e-PT.s<0.2){toast('El fin debe ser mayor que el inicio');return false}
+  const it=PRES.items[PT.i];if(!it)return false;
+  if(Math.abs(PT.s-PT.os)<0.005&&Math.abs(PT.e-PT.oe)<0.005){delete it.ts;delete it.te}else{it.ts=R2(PT.s);it.te=R2(PT.e)}
+  savePresSoon();renderPresList();return true;
+}
+document.addEventListener('input',ev=>{if(ev.target.id==='pt_s'||ev.target.id==='pt_e')ptRead()});
+document.addEventListener('keydown',ev=>{if(PT&&$('#pt_s')&&ev.key==='Enter'&&ev.target.id&&ev.target.id.startsWith('pt_')){ev.preventDefault();if(ptApply())closeModal()}});
+
+/* ===== Destino de la exportación ===== */
+async function pickDest(name){
+  if(!window.showSaveFilePicker)return null;
+  const m=pickMime();if(!m)return null;const ext=m.startsWith('video/mp4')?'mp4':'webm',mt=m.split(';')[0];
+  try{const h=await window.showSaveFilePicker({suggestedName:name+'.'+ext,types:[{description:'Video '+ext.toUpperCase(),accept:{[mt]:['.'+ext]}}]});return {h,ext}}
+  catch(e){return e&&e.name==='AbortError'?'cancel':null}
+}
 function presPlan(only,exp){
   const seq=[];
   const src=only!=null?[PRES.items[only]].filter(Boolean):PRES.items.filter(i=>i.on);
@@ -2341,7 +2395,7 @@ document.addEventListener('click',ev=>{
 });
 document.addEventListener('dblclick',ev=>{
   const pr=ev.target.closest('tr.prow');
-  if(pr&&PRES&&V.view==='pres'&&!ev.target.closest('button,input')){simStart('pres',{only:+pr.dataset.pi});return}
+  if(pr&&PRES&&V.view==='pres'&&!ev.target.closest('button,input')){ptOpen(+pr.dataset.pi);return}
   const tr=ev.target.closest('tr.mrow');if(!tr||ev.target.closest('button,input'))return;
   if(S.editM===tr.dataset.id){S.editM=null;renderTrim();renderMont()}else openTrim(tr.dataset.id)
 });
@@ -2462,7 +2516,7 @@ async function openPres(id){
   PRJ=await DB.all('projects');PRJ.sort((a,b)=>b.saved-a.saved);PV={};
   setView('pres');renderPres();prepSilent();
 }
-function resolveIt(it){const p=PRJ.find(x=>x.id===it.pid);const a=p&&p.actions.find(x=>x.id===it.aid);return {p,a}}
+function resolveIt(it){const p=PRJ.find(x=>x.id===it.pid);let a=p&&p.actions.find(x=>x.id===it.aid);if(a&&it.ts!=null&&it.te!=null&&it.te>it.ts)a=Object.assign({},a,{start:it.ts,end:it.te,adj:true});return {p,a}}
 function renderPres(){
   const el=$('#pres');
   el.innerHTML=`<div class="ph" id="presHead"></div>
@@ -2521,7 +2575,7 @@ function renderPresList(){
      <td class="grip">&#8942;&#8942;</td><td><input type="checkbox" data-a="pOn" data-i="${i}" ${x.it.on?'checked':''}></td><td>${i+1}</td>
      <td>${x.p?esc(x.p.name):'<span class="muted">(análisis borrado)</span>'}</td>
      <td>${x.a?`<span class="dot" style="background:${x.a.color}"></span>${esc(x.a.cat)} <span class="muted">#${x.a.n}</span> ${x.a.desc.map(d=>`<span class="chip">${esc(d)}</span>`).join('')}`:'<span class="muted">(jugada borrada)</span>'}</td>
-     <td>${x.a?fmt(x.a.start)+' – '+fmt(x.a.end):''}</td><td>${x.a?R2(x.a.end-x.a.start)+' s':''}</td>
+     <td title="Doble clic en la fila para ajustar el corte">${x.a?fmt1(x.a.start)+' – '+fmt1(x.a.end)+(x.a.adj?' <span class="adjb">ajustado</span>':''):''}</td><td>${x.a?R2(x.a.end-x.a.start)+' s':''}</td>
      <td style="white-space:nowrap"><button class="bt sm" data-a="pUp" data-i="${i}">&#9650;</button><button class="bt sm" data-a="pDn" data-i="${i}">&#9660;</button><button class="bt sm dng" data-a="pRm" data-i="${i}">&#10005;</button></td></tr>`).join('')}</tbody></table><div class="ptot">&#9201; Duración total de la presentación: <b>${fmtL(dur)}</b> <span class="muted">(${fmt(dur)})</span></div><div class="hint">Arrastrá las filas para ordenar · tildá cuáles salen · <b>doble click</b> en una jugada para verla en el reproductor.</div>`
    :`<div class="muted" style="padding:16px">Vacía. Abrí un análisis de la izquierda y usá <b>+ Su lista</b>, <b>+ Todas</b>, una categoría, o el <b>+</b> de cada jugada.</div>`);
 }
@@ -2604,6 +2658,8 @@ async function runPresExport(){
   if(!pickMime()){say('Este navegador no puede grabar video. Usá Chrome actualizado.');return}
   const list=PRES.items.filter(i=>i.on).map(i=>({it:i,...resolveIt(i)})).filter(x=>x.a&&x.p&&x.p.src&&x.p.src.kind==='file');
   if(!list.length&&!PRES.items.some(x=>x.slide&&x.on)){say('No hay clips exportables: los partidos de YouTube necesitan su archivo (botón Cargar archivo) o usá la Simulación en pantalla.');return}
+  const dest=await pickDest('BVA_'+safe(PRES.name));
+  if(dest==='cancel'){say('Exportación cancelada: no elegiste destino.');return}
   let miss=[...new Set(list.map(x=>x.p.id))].filter(pid=>!(PV[pid]&&PV[pid].status==='ok'));
   for(const pid of miss){await tryAuth(pid)}
   miss=miss.filter(pid=>!(PV[pid]&&PV[pid].status==='ok'));
@@ -2618,7 +2674,7 @@ async function runPresExport(){
   const r=await recordSequence({items,size:PRES.size,q:PRES.q,ov,cover:{on:c.on,dur:c.dur,title:c.title||PRES.name,sub:c.sub,line:c.line},ui:{pg:'#pxPg',msg:'#pxMsg',go:'#pxGo',goA:'peRun',goT:'Exportar MP4'}});
   COVER_OVERRIDE=null;EXP.busy=false;
   if(r.aborted){say('Exportación cancelada.');return}
-  downloadBlob(r,'BVA_'+safe(PRES.name),'#pxMsg');
+  await downloadBlob(r,'BVA_'+safe(PRES.name),'#pxMsg',dest);
 }
 let dragP=null;
 document.addEventListener('dragstart',ev=>{const tr=ev.target.closest&&ev.target.closest('tr.prow');if(!tr)return;dragP=+tr.dataset.pi;ev.dataTransfer.effectAllowed='move';try{ev.dataTransfer.setData('text/plain','p')}catch(e){}});
@@ -2674,6 +2730,10 @@ document.addEventListener('click',async ev=>{
     case 'pSlideEdit':{COVER_OVERRIDE=PRES.items[i].cover;EXP.back=null;showCover();break}
     case 'pcvOn':{PRES.cover.on=t.checked;savePresSoon();renderPresHead();renderPresList();break}
     case 'pOn':{PRES.items[i].on=t.checked;savePresSoon();renderPresList();renderPresVids();prepSilent();break}
+    case 'ptN':if(PT){ptRead();ptSet(t.dataset.f,PT[t.dataset.f]+parseFloat(t.dataset.d))}break;
+    case 'ptReset':if(PT){ptSet('s',PT.os);ptSet('e',PT.oe)}break;
+    case 'ptSave':if(ptApply())closeModal();break;
+    case 'ptSim':if(PT){ptRead();const k=PT.i;if(ptApply()){closeModal();simStart('pres',{only:k})}}break;
     case 'pUp':pMove(i,i-1);break;case 'pDn':pMove(i,i+1);break;
     case 'pRm':PRES.items.splice(i,1);savePresSoon();renderPresList();renderPresVids();break;
     case 'pClear':if(PRES.items.length&&confirm('¿Vaciar la presentación?')){PRES.items=[];savePresSoon();renderPresList();renderPresVids()}break;
