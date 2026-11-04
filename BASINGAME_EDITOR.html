@@ -600,6 +600,25 @@ body.drawing #bDraw{background:var(--ac);color:#fff}
 .ptg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ptc label{display:block;font-size:11px;opacity:.7;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
 .ptr{display:flex;gap:4px;align-items:center}.ptr input{width:76px;text-align:center}
 tr.prow{cursor:pointer}
+
+#mbox.wide:has(.pttl){max-width:760px}
+.ptv{position:relative;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:16/9;max-height:300px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center}
+.ptv video{display:none;width:100%;height:100%;object-fit:contain;background:#000}
+.ptno{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:12px;opacity:.75}
+.ptbar{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pttl{position:relative;height:74px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);margin-bottom:12px;overflow:hidden;cursor:crosshair;touch-action:none;user-select:none}
+#ptRul{position:absolute;left:0;right:0;top:0;height:18px;border-bottom:1px solid rgba(255,255,255,.08)}
+#ptRul span{position:absolute;top:3px;font-size:10px;opacity:.55;transform:translateX(-50%);padding-left:0}
+#ptRul span:first-child{transform:none;margin-left:4px}
+#ptRul span:before{content:"";position:absolute;left:50%;top:-3px;width:1px;height:3px}
+.ptseg{position:absolute;top:22px;bottom:6px;border-radius:7px;background:linear-gradient(180deg,#d9b25a,#b8902f);box-shadow:0 2px 10px rgba(201,162,74,.35);cursor:grab;display:flex;align-items:center;justify-content:center;min-width:6px}
+.tl.drag .ptseg,.pttl.drag .ptseg{cursor:grabbing}
+.ptseg b{font:600 12px Inter,sans-serif;color:#1a1405;pointer-events:none}
+.pth{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;background:rgba(0,0,0,.28)}
+.pth:after{content:"";position:absolute;top:50%;left:50%;width:2px;height:20px;margin:-10px 0 0 -1px;background:#1a1405;border-radius:1px}
+.pth.l{left:0;border-radius:7px 0 0 7px}.pth.r{right:0;border-radius:0 7px 7px 0}
+#ptHead{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);pointer-events:none;display:none}
+.ptok{padding:8px 20px;font-weight:600}
 </style>
 </head>
 <body>
@@ -1041,7 +1060,7 @@ function renderPBPtable(){
 
 /* ====================== plantillas / proyectos (modal) ====================== */
 function openModal(html,wide){$('#mbox').className=wide?'wide':'';$('#mbox').innerHTML=html;$('#modal').classList.add('on')}
-function closeModal(){$('#modal').classList.remove('on');$('#mbox').innerHTML='';try{EXP.dsg=false}catch(e){}if(COVER_OVERRIDE&&!EXP.busy){COVER_OVERRIDE=null;if(V.view==='pres'){renderPresHead();renderPresList()}}}
+function closeModal(){try{ptCleanup()}catch(e){}$('#modal').classList.remove('on');$('#mbox').innerHTML='';try{EXP.dsg=false}catch(e){}if(COVER_OVERRIDE&&!EXP.busy){COVER_OVERRIDE=null;if(V.view==='pres'){renderPresHead();renderPresList()}}}
 async function showManager(){
   const [ps,ts]=await Promise.all([DB.all('projects'),DB.all('templates')]);
   ps.sort((a,b)=>b.saved-a.saved);
@@ -1333,7 +1352,7 @@ document.addEventListener('keydown',ev=>{
 const stage=$('#stage');
 ['dragover','dragenter'].forEach(e=>stage.addEventListener(e,ev=>{ev.preventDefault();$('#empty').classList.add('drag')}));
 ['dragleave','drop'].forEach(e=>stage.addEventListener(e,ev=>{ev.preventDefault();$('#empty').classList.remove('drag');if(e==='drop'&&ev.dataTransfer.files[0]){const it=ev.dataTransfer.items&&ev.dataTransfer.items[0];const file=ev.dataTransfer.files[0];if(it&&it.getAsFileSystemHandle){it.getAsFileSystemHandle().then(h=>loadFile(file,h&&h.kind==='file'?h:null)).catch(()=>loadFile(file))}else loadFile(file)}}));
-$('#modal').addEventListener('click',ev=>{if(ev.target.id==='modal')closeModal()});
+$('#modal').addEventListener('click',ev=>{if(ev.target.id==='modal'&&!PT)closeModal()});
 $('#tl').addEventListener('click',ev=>{
   if(ev.target.closest('.seg')||!Pl.ready())return;
   const lane=document.querySelector('#lanes .lane');if(!lane)return;
@@ -1883,33 +1902,109 @@ function fmtL(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),x=
 let PT=null;
 function ptOpen(i){
   const it=PRES.items[i];if(!it||it.slide)return;const r=resolveIt(it);if(!r.a)return;
+  ptCleanup();
   const orig=r.p.actions.find(x=>x.id===it.aid);
-  PT={i,os:orig.start,oe:orig.end,s:r.a.start,e:r.a.end};
+  PT={i,pid:r.p.id,os:orig.start,oe:orig.end,s:r.a.start,e:r.a.end,dur:0,vid:null,url:null,drag:null};
+  ptWin();
   openModal(`<h3 style="margin:0 0 4px">Ajustar corte</h3>
-  <div class="muted" style="margin-bottom:12px">${esc(r.p.name||'Partido')} · <span class="dot" style="background:${r.a.color}"></span>${esc(r.a.cat)} #${r.a.n}<br>Solo cambia esta presentación: el análisis original no se toca.</div>
+  <div class="muted" style="margin-bottom:10px">${esc(r.p.name||'Partido')} · <span class="dot" style="background:${r.a.color}"></span>${esc(r.a.cat)} #${r.a.n} · Solo cambia esta presentación: el análisis original no se toca.</div>
+  <div class="ptv"><video id="ptVid" playsinline preload="auto"></video><div id="ptNo" class="ptno">Buscando el video del partido…</div></div>
+  <div class="ptbar"><button class="bt sm" data-a="ptPlay" id="ptPlayB">▶ Reproducir corte</button><span class="sp"></span><span class="muted" style="font-size:11px">Arrastrá el bloque para moverlo · estirá los bordes dorados · clic en la línea para ver ese punto</span><span class="sp"></span><button class="bt sm" data-a="ptZ" data-z="1.5" title="Alejar">−</button><button class="bt sm" data-a="ptZ" data-z="0.67" title="Acercar">+</button></div>
+  <div id="ptTl" class="pttl"><div id="ptRul"></div><div id="ptSeg" class="ptseg"><i class="pth l"></i><b id="ptSegT"></b><i class="pth r"></i></div><div id="ptHead"></div></div>
   <div class="ptg">${['s','e'].map(f=>`<div class="ptc"><label>${f==='s'?'Inicio':'Fin'} (segundos)</label>
     <div class="ptr"><button class="bt sm" data-a="ptN" data-f="${f}" data-d="-1">−1</button><button class="bt sm" data-a="ptN" data-f="${f}" data-d="-0.5">−0.5</button>
     <input type="number" step="0.1" min="0" id="pt_${f}" value="${R2(PT[f])}">
     <button class="bt sm" data-a="ptN" data-f="${f}" data-d="0.5">+0.5</button><button class="bt sm" data-a="ptN" data-f="${f}" data-d="1">+1</button></div></div>`).join('')}</div>
-  <div id="ptInfo" class="muted" style="margin:10px 0"></div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="bt" data-a="ptSim">▶ Ver este corte</button><button class="bt" data-a="ptReset">Restaurar original</button><span class="sp"></span><button class="bt" data-a="closeM">Cancelar</button><button class="bt pri" data-a="ptSave">Guardar</button></div>`);
-  ptInfo();
+  <div id="ptInfo" class="muted" style="margin:8px 0"></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="bt" data-a="ptSim">▶ Ver en simulación</button><button class="bt" data-a="ptReset">Restaurar original</button><span class="sp"></span><button class="bt" data-a="closeM">Descartar cambios</button><button class="bt pri ptok" data-a="ptSave">✓ Confirmar corte</button></div>`,true);
+  ptInfo();ptBind();ptLoadVid();
+}
+function ptWin(){const d=Math.max(15,(PT.e-PT.s)*2);PT.w0=Math.max(0,PT.s-d);PT.w1=PT.e+d}
+async function ptLoadVid(){
+  const my=PT;if(!my)return;
+  let f=(PV[my.pid]&&PV[my.pid].file)||FILES[my.pid];
+  if(!f){const p=PRJ.find(x=>x.id===my.pid);if(p&&p.src&&p.src.kind==='file'){try{await tryAuth(my.pid)}catch(e){}f=(PV[my.pid]&&PV[my.pid].file)||FILES[my.pid]}}
+  if(PT!==my)return;
+  const no=$('#ptNo'),v=$('#ptVid');if(!v)return;
+  if(!f){if(no){const pj=PRJ.find(x=>x.id===my.pid),isFile=pj&&pj.src&&pj.src.kind==='file';no.style.display='flex';no.innerHTML='<div>Para ver el video acá necesito el archivo de este partido.<br><span style="opacity:.7">Igual podés ajustar con la línea de tiempo y los números.</span><div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'+(isFile?'<button class="bt sm pri" data-a="ptAuth">Permitir acceso</button>':'')+'<button class="bt sm'+(isFile?'':' pri')+'" data-a="ptPick">Elegir archivo del partido</button></div></div>'}return}
+  my.url=URL.createObjectURL(f);my.vid=v;v.src=my.url;
+  v.onloadedmetadata=()=>{my.dur=v.duration||0;if(no)no.style.display='none';v.style.display='block';ptSeek(my.s);ptDraw()};
+  v.onerror=()=>{if(no){no.style.display='flex';no.textContent='No se pudo abrir el video en este navegador.'}};
+  v.ontimeupdate=()=>{ptHead();if(my.playing&&v.currentTime>=my.e){v.pause();my.playing=false;ptPlayB()}};
+  v.onpause=()=>{my.playing=false;ptPlayB()};
+}
+function ptSeek(t){const v=PT&&PT.vid;if(!v||!isFinite(t))return;try{v.currentTime=Math.max(0,PT.dur?Math.min(t,PT.dur-.05):t)}catch(e){}ptHead()}
+function ptPlayB(){const b=$('#ptPlayB');if(b&&PT)b.textContent=PT.playing?'❚❚ Pausar':'▶ Reproducir corte'}
+function ptPlay(){
+  const v=PT&&PT.vid;if(!v){toast('Falta el video del partido');return}
+  if(PT.playing){v.pause();return}
+  if(v.currentTime<PT.s||v.currentTime>=PT.e-.05)v.currentTime=PT.s;
+  PT.playing=true;ptPlayB();v.play().catch(()=>{PT.playing=false;ptPlayB()});
+}
+function ptCleanup(){
+  if(!PT)return;try{if(PT.vid){PT.vid.pause();PT.vid.removeAttribute('src');PT.vid.load()}if(PT.url)URL.revokeObjectURL(PT.url)}catch(e){}
+  PT=null;
+}
+function ptT2P(t){return (t-PT.w0)/(PT.w1-PT.w0)*100}
+function ptHead(){
+  const h=$('#ptHead');if(!h||!PT||!PT.vid)return;const t=PT.vid.currentTime;
+  h.style.display=(t>=PT.w0&&t<=PT.w1)?'block':'none';h.style.left=ptT2P(t)+'%';
+}
+function ptDraw(){
+  const seg=$('#ptSeg');if(!seg||!PT)return;
+  const l=ptT2P(PT.s),w=ptT2P(PT.e)-l;seg.style.left=l+'%';seg.style.width=Math.max(w,.6)+'%';
+  const st=$('#ptSegT');if(st)st.textContent=R2(PT.e-PT.s)+' s';
+  const rul=$('#ptRul');if(rul){
+    const span=PT.w1-PT.w0,steps=[1,2,5,10,15,30,60,120,300,600],step=steps.find(x=>span/x<=9)||600;let h='';
+    for(let t=Math.ceil(PT.w0/step)*step;t<=PT.w1;t+=step)h+=`<span style="left:${ptT2P(t)}%">${fmt(t)}</span>`;
+    rul.innerHTML=h;
+  }
+  ptHead();
+}
+function ptSync(){
+  const a=$('#pt_s'),b=$('#pt_e');if(a&&document.activeElement!==a)a.value=R2(PT.s);if(b&&document.activeElement!==b)b.value=R2(PT.e);ptInfo();
+}
+function ptBind(){
+  const tl=$('#ptTl');if(!tl)return;
+  const tAt=ev=>{const r=tl.getBoundingClientRect();return PT.w0+(ev.clientX-r.left)/r.width*(PT.w1-PT.w0)};
+  const snap=t=>Math.round(t*10)/10;
+  tl.addEventListener('pointerdown',ev=>{
+    if(!PT)return;const t=tAt(ev);let mode='seek';
+    if(ev.target.classList.contains('pth')&&ev.target.classList.contains('l'))mode='s';
+    else if(ev.target.classList.contains('pth'))mode='e';
+    else if(ev.target.closest('#ptSeg'))mode='m';
+    if(PT.playing&&PT.vid)PT.vid.pause();
+    PT.drag={mode,off:t-PT.s,len:PT.e-PT.s};tl.setPointerCapture(ev.pointerId);ev.preventDefault();
+    if(mode==='seek')ptSeek(Math.max(0,t));
+    tl.classList.add('drag');
+  });
+  tl.addEventListener('pointermove',ev=>{
+    if(!PT||!PT.drag)return;const d=PT.drag,t=tAt(ev),max=PT.dur||1e9;
+    if(d.mode==='seek'){ptSeek(Math.max(0,t));return}
+    if(d.mode==='m'){let s=snap(t-d.off);s=Math.max(0,Math.min(s,max-d.len));PT.s=R2(s);PT.e=R2(s+d.len);ptSeek(PT.s)}
+    else if(d.mode==='s'){PT.s=R2(Math.max(0,Math.min(snap(t),PT.e-.2)));ptSeek(PT.s)}
+    else{PT.e=R2(Math.min(max,Math.max(snap(t),PT.s+.2)));ptSeek(PT.e-.05)}
+    ptDraw();ptSync();
+  });
+  const end=()=>{if(!PT||!PT.drag)return;PT.drag=null;tl.classList.remove('drag');ptWin();ptDraw()};
+  tl.addEventListener('pointerup',end);tl.addEventListener('pointercancel',end);
 }
 function ptRead(){
   if(!PT)return;const a=parseFloat(($('#pt_s')||{}).value),b=parseFloat(($('#pt_e')||{}).value);
   if(isFinite(a))PT.s=Math.max(0,a);if(isFinite(b))PT.e=Math.max(0,b);ptInfo();
 }
 function ptInfo(){
-  const el=$('#ptInfo');if(!el||!PT)return;const ok=PT.e-PT.s>=0.2,d=R2(PT.e-PT.s);
+  const el=$('#ptInfo');if(!el||!PT)return;ptDraw();const ok=PT.e-PT.s>=0.2,d=R2(PT.e-PT.s);
   el.innerHTML=ok?`Duración del corte: <b>${d} s</b> · original ${R2(PT.oe-PT.os)} s (${fmt1(PT.os)} – ${fmt1(PT.oe)})`:'<span style="color:#e57373">El fin debe ser al menos 0.2 s mayor que el inicio.</span>';
 }
-function ptSet(f,v){PT[f]=Math.max(0,R2(v));const i=$('#pt_'+f);if(i)i.value=PT[f];ptInfo()}
+function ptSet(f,v){PT[f]=Math.max(0,R2(v));const i=$('#pt_'+f);if(i)i.value=PT[f];ptWin();ptInfo();ptSeek(f==='s'?PT.s:PT.e-.05)}
 function ptApply(){
   ptRead();if(PT.e-PT.s<0.2){toast('El fin debe ser mayor que el inicio');return false}
   const it=PRES.items[PT.i];if(!it)return false;
   if(Math.abs(PT.s-PT.os)<0.005&&Math.abs(PT.e-PT.oe)<0.005){delete it.ts;delete it.te}else{it.ts=R2(PT.s);it.te=R2(PT.e)}
   savePresSoon();renderPresList();return true;
 }
+document.addEventListener('keydown',ev=>{if(PT&&ev.code==='Space'&&!(ev.target.tagName==='INPUT')){ev.preventDefault();ptPlay()}});
 document.addEventListener('input',ev=>{if(ev.target.id==='pt_s'||ev.target.id==='pt_e')ptRead()});
 document.addEventListener('keydown',ev=>{if(PT&&$('#pt_s')&&ev.key==='Enter'&&ev.target.id&&ev.target.id.startsWith('pt_')){ev.preventDefault();if(ptApply())closeModal()}});
 
@@ -2732,6 +2827,13 @@ document.addEventListener('click',async ev=>{
     case 'pOn':{PRES.items[i].on=t.checked;savePresSoon();renderPresList();renderPresVids();prepSilent();break}
     case 'ptN':if(PT){ptRead();ptSet(t.dataset.f,PT[t.dataset.f]+parseFloat(t.dataset.d))}break;
     case 'ptReset':if(PT){ptSet('s',PT.os);ptSet('e',PT.oe)}break;
+    case 'ptAuth':{const my=PT;if(my&&await tryAuth(my.pid)){if(PT===my)ptLoadVid()}else toast('No se pudo: elegí el archivo manualmente');break}
+    case 'ptPick':{const my=PT;if(!my)break;const pid=my.pid;let f=null;
+      if(window.showOpenFilePicker){try{const [h]=await window.showOpenFilePicker({types:[{description:'Video',accept:{'video/*':['.mp4','.mov','.webm','.m4v','.mkv','.avi']}}]});f=await h.getFile();await pvYt(pid,f);FILES[pid]=f;DB.put('handles',{id:pid,h}).catch(()=>{});prepVideo(pid,f)}catch(e){}}
+      else{f=await new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='video/*';i.onchange=()=>res(i.files[0]||null);i.oncancel=()=>res(null);i.click()});if(f){await pvYt(pid,f);FILES[pid]=f;prepVideo(pid,f)}}
+      if(f&&PT===my)ptLoadVid();break}
+    case 'ptPlay':ptPlay();break;
+    case 'ptZ':if(PT){const c=(PT.s+PT.e)/2,h=(PT.w1-PT.w0)/2*parseFloat(t.dataset.z);PT.w0=Math.max(0,c-h);PT.w1=c+h;ptDraw()}break;
     case 'ptSave':if(ptApply())closeModal();break;
     case 'ptSim':if(PT){ptRead();const k=PT.i;if(ptApply()){closeModal();simStart('pres',{only:k})}}break;
     case 'pUp':pMove(i,i-1);break;case 'pDn':pMove(i,i+1);break;
