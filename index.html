@@ -8979,7 +8979,7 @@ function wrapTxt(c,txt,maxW,maxL){var w=String(txt||'').split(/\s+/),ln=[],cu=''
 function cropAR(p){var m=p.cancha==='full',cp=.12;return m?(L+2*cp)/(W+2*cp):(W+2*cp)/(L/2+2*cp);}
 /* PLAYBOOK: filas de jugadas, con todos los cuadros de cada una uno al lado del otro */
 function buildPlaybook(plays){
-  var S=2,PW=1754,PH=1240,mx=64,top=150,bot=1128,gap=14,titleH=34,rowGap=16,RH=190,availW=PW-2*mx;
+  var S=2,PW=1240,PH=1754,mx=64,top=150,bot=1632,gap=14,titleH=34,rowGap=18,RH=250,availW=PW-2*mx;
   var rows=plays.map(function(p){var ar=cropAR(p),n=p.cuadros.length,h=Math.min(RH,(availW-gap*(n-1))/(ar*n));return {p:p,ar:ar,n:n,h:h,H:h+titleH+rowGap};});
   var pages=[],cu=[],used=0,room=bot-top;
   rows.forEach(function(r){if(used+r.H>room&&cu.length){pages.push(cu);cu=[];used=0;}cu.push(r);used+=r.H;});
@@ -8992,8 +8992,8 @@ function buildPlaybook(plays){
     c.fillStyle='#0f172a';c.font='800 44px Arial,Helvetica,sans-serif';try{c.letterSpacing='3px';}catch(e){}c.fillText(title,mx,92);try{c.letterSpacing='0px';}catch(e){}
     c.fillStyle='#f97316';c.fillRect(mx,108,72,5);
     c.fillStyle='#64748b';c.font='400 20px Arial,Helvetica,sans-serif';c.textAlign='right';c.fillText(ds+(pages.length>1?'   ·   '+(gi+1)+' / '+pages.length:''),PW-mx,92);c.textAlign='left';
-    c.fillStyle='#e2e8f0';c.fillRect(mx,1150,PW-2*mx,1.5);
-    c.fillStyle='#0f172a';c.font='800 24px Arial,Helvetica,sans-serif';c.textAlign='center';try{c.letterSpacing='9px';}catch(e){}c.fillText('BASINGAME',PW/2+4,1196);try{c.letterSpacing='0px';}catch(e){}c.textAlign='left';
+    c.fillStyle='#e2e8f0';c.fillRect(mx,PH-90,PW-2*mx,1.5);
+    c.fillStyle='#0f172a';c.font='800 24px Arial,Helvetica,sans-serif';c.textAlign='center';try{c.letterSpacing='9px';}catch(e){}c.fillText('BASINGAME',PW/2+4,PH-44);try{c.letterSpacing='0px';}catch(e){}c.textAlign='left';
     var y=top,jobs=[];
     pg.forEach(function(r){
       var ty=y+22,p=r.p;c.fillStyle='#0f172a';c.font='700 21px Arial,Helvetica,sans-serif';c.fillText(p.nombre,mx,ty);
@@ -9027,8 +9027,8 @@ function pdfFrom(pages){
   var kids=[];for(var i=0;i<N;i++)kids.push((3+i*3)+' 0 R');
   obj(1,function(){str('<< /Type /Catalog /Pages 2 0 R >>');});
   obj(2,function(){str('<< /Type /Pages /Count '+N+' /Kids ['+kids.join(' ')+'] >>');});
-  pages.forEach(function(j,i){var pn=3+i*3,cn=pn+1,im=pn+2,cs='q 842 0 0 595 0 0 cm /Im'+i+' Do Q';
-    obj(pn,function(){str('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /XObject << /Im'+i+' '+im+' 0 R >> >> /Contents '+cn+' 0 R >>');});
+  pages.forEach(function(j,i){var pn=3+i*3,cn=pn+1,im=pn+2,cs='q 595 0 0 842 0 0 cm /Im'+i+' Do Q';
+    obj(pn,function(){str('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im'+i+' '+im+' 0 R >> >> /Contents '+cn+' 0 R >>');});
     obj(cn,function(){str('<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');});
     obj(im,function(){str('<< /Type /XObject /Subtype /Image /Width '+j.w+' /Height '+j.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+j.bytes.length+' >>\nstream\n');push(j.bytes);str('\nendstream');});});
   var xo=off,tot=3*N+3;str('xref\n0 '+tot+'\n0000000000 65535 f \n');
