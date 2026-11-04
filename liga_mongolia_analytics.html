@@ -8641,6 +8641,14 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 .pz-pv svg{height:100%;width:auto;max-width:100%;border-radius:6px}
 @media(max-width:1000px){.pz-ed{grid-template-columns:1fr}.pz-courtbox.half svg{height:52vh}.pz-nm-in{width:180px}}
 @media(max-width:560px){.pz-grid{grid-template-columns:repeat(2,1fr);gap:8px}.pz-thumb{height:116px}.pz-search{flex:1 1 100%}.pz-tool{min-width:44px}.pz-new{min-height:190px}}
+.pz-tags{display:flex;gap:4px;flex-wrap:wrap;min-height:0}
+.pz-tags:empty{display:none}
+.pz-tg{font-size:10px;letter-spacing:.6px;text-transform:uppercase;background:var(--bg3,#112238);color:var(--txt2,#94a3b8);padding:2px 7px;border-radius:999px}
+.pz-tgl{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--txt3,#6b7280);margin-top:10px;font-weight:700}
+.pz-tgs{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.pz-chip{border:1px solid var(--brd2,rgba(255,255,255,.14));background:var(--bg3,#112238);color:var(--txt2,#94a3b8);border-radius:999px;padding:0 10px;height:24px;font-size:11.5px}
+.pz-chip.on{border-color:var(--pz-or);color:var(--pz-or);background:rgba(249,115,22,.1)}
+.pz-ti{flex:1;height:28px!important;font-size:12px!important}
 
 </style>
 <script id="bg-pizarra-js">
@@ -8651,9 +8659,9 @@ if(window.__bgPizarra)return;window.__bgPizarra=1;
 
 /* ═══ i18n (ES base · EN · MN — MN a revisar por un hablante nativo) ═══ */
 var I={
-es:{nav:'Pizarra táctica',title:'Jugadas',club:'Club',search:'Buscar jugada…',create:'Crear',createTile:'Crear jugada',newTitle:'Nueva jugada',newSub:'Elegí el tipo de cancha',half:'Media cancha',full:'Cancha entera',halfD:'Una mitad de la cancha',fullD:'Las dos mitades',namePh:'Nombre de la jugada',back:'Biblioteca',save:'Guardar',saved:'Guardado ✓',frames:'cuadros',frame:'Cuadro',view:'Ver',edit:'Editar',dup:'Duplicar',del:'Eliminar',emptyT:'Este club todavía no tiene jugadas',emptyS:'Creá la primera con «Crear».',players:'Jugadores',attack:'Ataque',defense:'Defensa',ball:'Balón',five:'Los 5',tokens:'Fichas',court:'Cancha',skinD:'Oscura',skinL:'Clara',skinP:'Parquet',tMove:'Mover',tPass:'Pase',tCut:'Corte',tDrib:'Dribbling',tScr:'Cortina',tShot:'Tiro',tText:'Texto',tErase:'Borrar',undo:'Deshacer',redo:'Rehacer',addHalf:'+ Otra media cancha',addFull:'+ Otra cancha',dupf:'Duplicar',delf:'Borrar',note:'Nota',defs:'Mostrar rival',snap:'Imán a cuadrícula',mirror:'Invertir',side:'Cambiar lado',pdf:'PDF',jpg:'JPG',play:'Reproducir',pause:'Pausa',prev:'Anterior',next:'Siguiente',speed:'Velocidad',fs:'Pantalla completa',confirmDel:'¿Eliminar esta jugada?',lastMod:'Modificada',pick:'Elegí o creá una jugada primero.',textph:'Texto para colocar en la cancha…',hintMove:'Arrastrá fichas y balón. Suprimir borra la selección.',hintDraw:'Arrastrá sobre la cancha (conviene empezar en una ficha).',hintText:'Tocá la cancha para colocar el texto.',hintErase:'Tocá una ficha, línea o texto para borrarlo.',hintPlace:'Tocá la cancha para colocar',making:'Generando archivo…',cancel:'Cancelar',ok:'Aceptar',newName:'Jugada',ofN:'de',sh_c:'Círculo',sh_cn:'Círculo con número',sh_cp:'Círculo con puesto',sh_t:'Triángulo',sh_tn:'Triángulo con número',sh_s:'Cuadrado',sh_sn:'Cuadrado con número',sh_x:'X',colorO:'Color del ataque',colorD:'Color de la defensa',nplays:'jugadas'},
-en:{nav:'Play board',title:'Plays',club:'Club',search:'Search plays…',create:'Create',createTile:'Create play',newTitle:'New play',newSub:'Choose the court type',half:'Half court',full:'Full court',halfD:'One half of the court',fullD:'Both halves',namePh:'Play name',back:'Library',save:'Save',saved:'Saved ✓',frames:'frames',frame:'Frame',view:'View',edit:'Edit',dup:'Duplicate',del:'Delete',emptyT:'This club has no plays yet',emptyS:'Create the first one with “Create”.',players:'Players',attack:'Offense',defense:'Defense',ball:'Ball',five:'All 5',tokens:'Tokens',court:'Court',skinD:'Dark',skinL:'Light',skinP:'Hardwood',tMove:'Move',tPass:'Pass',tCut:'Cut',tDrib:'Dribble',tScr:'Screen',tShot:'Shot',tText:'Text',tErase:'Erase',undo:'Undo',redo:'Redo',addHalf:'+ Another half court',addFull:'+ Another court',dupf:'Duplicate',delf:'Delete',note:'Note',defs:'Show opponent',snap:'Snap to grid',mirror:'Mirror',side:'Switch side',pdf:'PDF',jpg:'JPG',play:'Play',pause:'Pause',prev:'Previous',next:'Next',speed:'Speed',fs:'Full screen',confirmDel:'Delete this play?',lastMod:'Updated',pick:'Pick or create a play first.',textph:'Text to place on the court…',hintMove:'Drag tokens and the ball. Delete removes the selection.',hintDraw:'Drag on the court (best to start on a token).',hintText:'Tap the court to place the text.',hintErase:'Tap a token, line or text to erase it.',hintPlace:'Tap the court to place',making:'Building file…',cancel:'Cancel',ok:'OK',newName:'Play',ofN:'of',sh_c:'Circle',sh_cn:'Circle with number',sh_cp:'Circle with position',sh_t:'Triangle',sh_tn:'Triangle with number',sh_s:'Square',sh_sn:'Square with number',sh_x:'X',colorO:'Offense color',colorD:'Defense color',nplays:'plays'},
-mn:{nav:'Хувилбар',title:'Хувилбарууд',club:'Клуб',search:'Хайх…',create:'Үүсгэх',createTile:'Хувилбар үүсгэх',newTitle:'Шинэ хувилбар',newSub:'Талбайн төрлөө сонгоно уу',half:'Хагас талбай',full:'Бүтэн талбай',halfD:'Талбайн нэг тал',fullD:'Хоёр тал',namePh:'Хувилбарын нэр',back:'Сан',save:'Хадгалах',saved:'Хадгалсан ✓',frames:'кадр',frame:'Кадр',view:'Харах',edit:'Засах',dup:'Хувилах',del:'Устгах',emptyT:'Энэ клубт хувилбар алга',emptyS:'«Үүсгэх» дарж эхнийхийг үүсгээрэй.',players:'Тоглогчид',attack:'Довтолгоо',defense:'Хамгаалалт',ball:'Бөмбөг',five:'Бүх 5',tokens:'Тэмдэг',court:'Талбай',skinD:'Бараан',skinL:'Цайвар',skinP:'Паркет',tMove:'Зөөх',tPass:'Дамжуулалт',tCut:'Зүсэлт',tDrib:'Дриблинг',tScr:'Скрин',tShot:'Шидэлт',tText:'Бичвэр',tErase:'Арилгах',undo:'Буцаах',redo:'Давтах',addHalf:'+ Өөр хагас талбай',addFull:'+ Өөр талбай',dupf:'Хувилах',delf:'Устгах',note:'Тэмдэглэл',defs:'Өрсөлдөгч харуулах',snap:'Тор',mirror:'Толин',side:'Тал солих',pdf:'PDF',jpg:'JPG',play:'Тоглуулах',pause:'Түр зогсоох',prev:'Өмнөх',next:'Дараах',speed:'Хурд',fs:'Бүтэн дэлгэц',confirmDel:'Энэ хувилбарыг устгах уу?',lastMod:'Шинэчилсэн',pick:'Эхлээд хувилбар сонгоно уу.',textph:'Талбайд тавих бичвэр…',hintMove:'Тоглогч, бөмбөгийг чирнэ.',hintDraw:'Талбай дээр чирж зурна.',hintText:'Бичвэр тавихын тулд талбайг дарна.',hintErase:'Устгах зүйлээ дарна.',hintPlace:'Талбайг дарж байрлуулна',making:'Файл бэлдэж байна…',cancel:'Болих',ok:'За',newName:'Хувилбар',ofN:'/',sh_c:'Тойрог',sh_cn:'Дугаартай тойрог',sh_cp:'Байрлалтай тойрог',sh_t:'Гурвалжин',sh_tn:'Дугаартай гурвалжин',sh_s:'Дөрвөлжин',sh_sn:'Дугаартай дөрвөлжин',sh_x:'X',colorO:'Довтолгооны өнгө',colorD:'Хамгаалалтын өнгө',nplays:'хувилбар'}
+es:{nav:'Pizarra táctica',title:'Jugadas',club:'Club',search:'Buscar jugada…',create:'Crear',createTile:'Crear jugada',newTitle:'Nueva jugada',newSub:'Elegí el tipo de cancha',half:'Media cancha',full:'Cancha entera',halfD:'Una mitad de la cancha',fullD:'Las dos mitades',namePh:'Nombre de la jugada',back:'Biblioteca',save:'Guardar',saved:'Guardado ✓',frames:'cuadros',frame:'Cuadro',view:'Ver',edit:'Editar',dup:'Duplicar',del:'Eliminar',emptyT:'Este club todavía no tiene jugadas',emptyS:'Creá la primera con «Crear».',players:'Jugadores',attack:'Ataque',defense:'Defensa',ball:'Balón',five:'Los 5',tokens:'Fichas',court:'Cancha',skinD:'Oscura',skinL:'Clara',skinP:'Parquet',tMove:'Mover',tPass:'Pase',tCut:'Corte',tDrib:'Dribbling',tScr:'Cortina',tShot:'Tiro',tText:'Texto',tErase:'Borrar',undo:'Deshacer',redo:'Rehacer',addHalf:'+ Otra media cancha',addFull:'+ Otra cancha',dupf:'Duplicar',delf:'Borrar',note:'Nota',defs:'Mostrar rival',snap:'Imán a cuadrícula',mirror:'Invertir',side:'Cambiar lado',pdf:'PDF',png:'PNG',play:'Reproducir',pause:'Pausa',prev:'Anterior',next:'Siguiente',speed:'Velocidad',fs:'Pantalla completa',confirmDel:'¿Eliminar esta jugada?',lastMod:'Modificada',pick:'Elegí o creá una jugada primero.',textph:'Texto para colocar en la cancha…',hintMove:'Arrastrá fichas y balón. Suprimir borra la selección.',hintDraw:'Arrastrá sobre la cancha (conviene empezar en una ficha).',hintText:'Tocá la cancha para colocar el texto.',hintErase:'Tocá una ficha, línea o texto para borrarlo.',hintPlace:'Tocá la cancha para colocar',making:'Generando archivo…',cancel:'Cancelar',ok:'Aceptar',newName:'Jugada',ofN:'de',sh_c:'Círculo',sh_cn:'Círculo con número',sh_cp:'Círculo con puesto',sh_t:'Triángulo',sh_tn:'Triángulo con número',sh_s:'Cuadrado',sh_sn:'Cuadrado con número',sh_x:'X',colorO:'Color del ataque',colorD:'Color de la defensa',nplays:'jugadas',tags:'Etiquetas',tagPh:'Nueva etiqueta',pdfAll:'PDF biblioteca',pdfOne:'Exportar esta jugada en PDF'},
+en:{nav:'Play board',title:'Plays',club:'Club',search:'Search plays…',create:'Create',createTile:'Create play',newTitle:'New play',newSub:'Choose the court type',half:'Half court',full:'Full court',halfD:'One half of the court',fullD:'Both halves',namePh:'Play name',back:'Library',save:'Save',saved:'Saved ✓',frames:'frames',frame:'Frame',view:'View',edit:'Edit',dup:'Duplicate',del:'Delete',emptyT:'This club has no plays yet',emptyS:'Create the first one with “Create”.',players:'Players',attack:'Offense',defense:'Defense',ball:'Ball',five:'All 5',tokens:'Tokens',court:'Court',skinD:'Dark',skinL:'Light',skinP:'Hardwood',tMove:'Move',tPass:'Pass',tCut:'Cut',tDrib:'Dribble',tScr:'Screen',tShot:'Shot',tText:'Text',tErase:'Erase',undo:'Undo',redo:'Redo',addHalf:'+ Another half court',addFull:'+ Another court',dupf:'Duplicate',delf:'Delete',note:'Note',defs:'Show opponent',snap:'Snap to grid',mirror:'Mirror',side:'Switch side',pdf:'PDF',png:'PNG',play:'Play',pause:'Pause',prev:'Previous',next:'Next',speed:'Speed',fs:'Full screen',confirmDel:'Delete this play?',lastMod:'Updated',pick:'Pick or create a play first.',textph:'Text to place on the court…',hintMove:'Drag tokens and the ball. Delete removes the selection.',hintDraw:'Drag on the court (best to start on a token).',hintText:'Tap the court to place the text.',hintErase:'Tap a token, line or text to erase it.',hintPlace:'Tap the court to place',making:'Building file…',cancel:'Cancel',ok:'OK',newName:'Play',ofN:'of',sh_c:'Circle',sh_cn:'Circle with number',sh_cp:'Circle with position',sh_t:'Triangle',sh_tn:'Triangle with number',sh_s:'Square',sh_sn:'Square with number',sh_x:'X',colorO:'Offense color',colorD:'Defense color',nplays:'plays',tags:'Tags',tagPh:'New tag',pdfAll:'Library PDF',pdfOne:'Export this play as PDF'},
+mn:{nav:'Хувилбар',title:'Хувилбарууд',club:'Клуб',search:'Хайх…',create:'Үүсгэх',createTile:'Хувилбар үүсгэх',newTitle:'Шинэ хувилбар',newSub:'Талбайн төрлөө сонгоно уу',half:'Хагас талбай',full:'Бүтэн талбай',halfD:'Талбайн нэг тал',fullD:'Хоёр тал',namePh:'Хувилбарын нэр',back:'Сан',save:'Хадгалах',saved:'Хадгалсан ✓',frames:'кадр',frame:'Кадр',view:'Харах',edit:'Засах',dup:'Хувилах',del:'Устгах',emptyT:'Энэ клубт хувилбар алга',emptyS:'«Үүсгэх» дарж эхнийхийг үүсгээрэй.',players:'Тоглогчид',attack:'Довтолгоо',defense:'Хамгаалалт',ball:'Бөмбөг',five:'Бүх 5',tokens:'Тэмдэг',court:'Талбай',skinD:'Бараан',skinL:'Цайвар',skinP:'Паркет',tMove:'Зөөх',tPass:'Дамжуулалт',tCut:'Зүсэлт',tDrib:'Дриблинг',tScr:'Скрин',tShot:'Шидэлт',tText:'Бичвэр',tErase:'Арилгах',undo:'Буцаах',redo:'Давтах',addHalf:'+ Өөр хагас талбай',addFull:'+ Өөр талбай',dupf:'Хувилах',delf:'Устгах',note:'Тэмдэглэл',defs:'Өрсөлдөгч харуулах',snap:'Тор',mirror:'Толин',side:'Тал солих',pdf:'PDF',png:'PNG',play:'Тоглуулах',pause:'Түр зогсоох',prev:'Өмнөх',next:'Дараах',speed:'Хурд',fs:'Бүтэн дэлгэц',confirmDel:'Энэ хувилбарыг устгах уу?',lastMod:'Шинэчилсэн',pick:'Эхлээд хувилбар сонгоно уу.',textph:'Талбайд тавих бичвэр…',hintMove:'Тоглогч, бөмбөгийг чирнэ.',hintDraw:'Талбай дээр чирж зурна.',hintText:'Бичвэр тавихын тулд талбайг дарна.',hintErase:'Устгах зүйлээ дарна.',hintPlace:'Талбайг дарж байрлуулна',making:'Файл бэлдэж байна…',cancel:'Болих',ok:'За',newName:'Хувилбар',ofN:'/',sh_c:'Тойрог',sh_cn:'Дугаартай тойрог',sh_cp:'Байрлалтай тойрог',sh_t:'Гурвалжин',sh_tn:'Дугаартай гурвалжин',sh_s:'Дөрвөлжин',sh_sn:'Дугаартай дөрвөлжин',sh_x:'X',colorO:'Довтолгооны өнгө',colorD:'Хамгаалалтын өнгө',nplays:'хувилбар',tags:'Шошго',tagPh:'Шинэ шошго',pdfAll:'Сангийн PDF',pdfOne:'Энэ хувилбарыг PDF болгох'}
 };
 function lang(){var l=String(window.currentLang||window.LANG||window.lang||document.documentElement.lang||'es').toLowerCase().slice(0,2);return I[l]?l:'es';}
 function t(k){var L=I[lang()];return (L&&L[k])||I.es[k]||k;}
@@ -8766,6 +8774,7 @@ function renderCourt(pl,fi,o){
   o=o||{};var fr=o.frame||pl.cuadros[fi],v=mkView(pl),u=++UID,pos=o.pos||{f:fr.f,b:fr.b},col=pl.color||'#f97316',cd=pl.colorD||'#4a8ab8',skin=o.skin||pl.skin||'dark',P=skinP(skin);
   o.skin=skin;CURSKIN=skin;
   var vb=v.x+' '+v.y+' '+v.w+' '+v.h;
+  if(o.crop){var cp=.12,cw=v.m==='full'?L:W,ch=v.m==='full'?W:L/2;vb=(-cp)+' '+(-cp)+' '+(cw+2*cp)+' '+(ch+2*cp);}
   var s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+vb+'" preserveAspectRatio="xMidYMid meet" data-m="'+v.m+'" font-family="Inter,Arial,sans-serif">';
   s+='<rect x="'+v.x+'" y="'+v.y+'" width="'+v.w+'" height="'+v.h+'" fill="'+P.out+'"/>';
   var inner=courtEls(skin);
@@ -8852,6 +8861,7 @@ function load(){
       return true;});
     dirty=ST.plays.length!==n0;}
   else{ST.plays=window.__pzSeed?samples():[];dirty=true;}
+  if(!ST.tags.length){ST.tags=['Pick & roll','Sacada de banda','Zona','Último tiro','Press'];dirty=true;}
   if(dirty)save(true);
   ST.cur=ST.plays[0]?ST.plays[0].id:null;ST.fr=0;ST.hist=[];ST.redo=[];ST.place=null;ST.sel=[];ST.selStroke=null;
 }
@@ -8908,11 +8918,11 @@ function libHTML(){
   return '<div class="pz-head"><div class="pz-ttl"><h2>'+t('title')+'</h2><span>'+esc(ST.equipo||'')+'</span></div><div class="pz-grow"></div>'+teamSel()+'</div>'+
   '<div class="pz-bar"><button class="pz-btn pri" data-a="new">'+ic('plus',15)+t('create')+'</button>'+
   '<label class="pz-search">'+ic('search',15)+'<input id="pz-q" data-f="q" placeholder="'+esc(t('search'))+'" value="'+esc(ST.q)+'" aria-label="'+esc(t('search'))+'"></label>'+
-  '<span class="pz-count" id="pz-count"></span></div><div class="pz-grid" id="pz-grid"></div>';
+  '<span class="pz-count" id="pz-count"></span><span class="pz-grow"></span><button class="pz-btn" data-a="pdfall">'+t('pdfAll')+'</button></div><div class="pz-grid" id="pz-grid"></div>';
 }
 function filtered(){
   var q=ST.q.trim().toLowerCase();
-  return ST.plays.filter(function(p){return !q||p.nombre.toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return b.modificada-a.modificada;});
+  return ST.plays.filter(function(p){return !q||(p.nombre+' '+(p.etiquetas||[]).join(' ')).toLowerCase().indexOf(q)>=0;}).sort(function(a,b){return b.modificada-a.modificada;});
 }
 function drawGrid(){
   var F=filtered(),g=$('#pz-grid'),cn=$('#pz-count');if(!g)return;
@@ -8920,8 +8930,9 @@ function drawGrid(){
   var h='<button class="pz-card pz-new" data-a="new"><span class="pz-plus">'+ic('plus',26)+'</span><b>'+t('createTile')+'</b></button>';
   h+=F.map(function(p){
     return '<div class="pz-card"><div class="pz-thumb" data-a="open" data-v="'+p.id+'">'+renderCourt(p,0,{sw:1.9})+'</div><div class="pz-cb"><div class="pz-nm" title="'+esc(p.nombre)+'">'+esc(p.nombre)+'</div>'+
+    '<div class="pz-tags">'+(p.etiquetas||[]).map(function(x){return '<span class="pz-tg">'+esc(x)+'</span>';}).join('')+'</div>'+
     '<div class="pz-meta">'+p.cuadros.length+' '+t('frames')+' · '+(p.cancha==='full'?t('full'):t('half'))+' · '+fmtD(p.modificada)+'</div>'+
-    '<div class="pz-acts"><button class="pz-btn sm pri" data-a="open" data-v="'+p.id+'">'+t('view')+'</button><button class="pz-btn sm" data-a="edit" data-v="'+p.id+'">'+t('edit')+'</button><span class="pz-grow"></span><button class="pz-btn sm ic" data-a="dup" data-v="'+p.id+'" title="'+t('dup')+'" aria-label="'+t('dup')+'">'+ic('copy',14)+'</button><button class="pz-btn sm ic" data-a="del" data-v="'+p.id+'" title="'+t('del')+'" aria-label="'+t('del')+'">'+ic('trash',14)+'</button></div></div></div>';}).join('');
+    '<div class="pz-acts"><button class="pz-btn sm pri" data-a="open" data-v="'+p.id+'">'+t('view')+'</button><button class="pz-btn sm" data-a="edit" data-v="'+p.id+'">'+t('edit')+'</button><span class="pz-grow"></span><button class="pz-btn sm" data-a="pdfp" data-v="'+p.id+'" title="'+esc(t('pdfOne'))+'">'+t('pdf')+'</button><button class="pz-btn sm ic" data-a="dup" data-v="'+p.id+'" title="'+t('dup')+'" aria-label="'+t('dup')+'">'+ic('copy',14)+'</button><button class="pz-btn sm ic" data-a="del" data-v="'+p.id+'" title="'+t('del')+'" aria-label="'+t('del')+'">'+ic('trash',14)+'</button></div></div></div>';}).join('');
   if(!F.length&&!ST.q)h+='<div class="pz-empty"><b>'+t('emptyT')+'</b>'+t('emptyS')+'</div>';
   g.innerHTML=h;
 }
@@ -8931,16 +8942,24 @@ function createFlow(){
   var w=document.createElement('div');w.className='pz-ovl';
   var pv=function(c){return renderCourt({cancha:c,lado:'L',skin:LS.get('bgpz:skin','dark'),cuadros:[{f:{},b:null,t:[]}]},0,{});};
   w.innerHTML='<div class="pz-modal pz-choose" role="dialog" aria-modal="true"><h3>'+t('newTitle')+'</h3><p>'+t('newSub')+'</p><input class="pz-mi" maxlength="40" placeholder="'+esc(t('namePh'))+'" aria-label="'+esc(t('namePh'))+'">'+
+  '<div class="pz-tgl">'+t('tags')+'</div><div class="pz-tgs" id="pz-ctags"></div><div class="pz-row" style="margin-top:6px"><input class="pz-mi pz-ti" id="pz-newtag" maxlength="24" placeholder="'+esc(t('tagPh'))+'"><button class="pz-btn sm" data-x="addtag">+</button></div>'+
   '<div class="pz-choices"><button data-c="half"><div class="pz-pv h">'+pv('half')+'</div><b>'+t('half')+'</b><small>'+t('halfD')+'</small></button><button data-c="full"><div class="pz-pv">'+pv('full')+'</div><b>'+t('full')+'</b><small>'+t('fullD')+'</small></button></div>'+
   '<div class="pz-row" style="justify-content:flex-end;margin-top:12px"><button class="pz-btn sm" data-x="no">'+t('cancel')+'</button></div></div>';
   document.body.appendChild(w);
+  var selT=[];
+  function drawTags(){w.querySelector('#pz-ctags').innerHTML=ST.tags.map(function(x){return '<button class="pz-chip'+(selT.indexOf(x)>=0?' on':'')+'" data-tg="'+esc(x)+'">'+esc(x)+'</button>';}).join('');}
+  function addT(){var i=w.querySelector('#pz-newtag'),v=i.value.trim();if(!v)return;if(ST.tags.indexOf(v)<0)ST.tags.push(v);if(selT.indexOf(v)<0)selT.push(v);i.value='';save(true);drawTags();}
+  drawTags();
+  w.querySelector('#pz-newtag').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();e.stopPropagation();addT();}});
   function close(){w.remove();document.removeEventListener('keydown',kd,true);}
   function kd(e){if(e.key==='Escape'){e.stopPropagation();close();}}
   document.addEventListener('keydown',kd,true);
   w.addEventListener('click',function(e){
+    var tg=e.target.closest('[data-tg]');if(tg){var tv=tg.getAttribute('data-tg'),ix=selT.indexOf(tv);if(ix>=0)selT.splice(ix,1);else selT.push(tv);drawTags();return;}
+    if(e.target.getAttribute&&e.target.getAttribute('data-x')==='addtag'){addT();return;}
     var b=e.target.closest('[data-c]');
     if(b){var nm=w.querySelector('input').value.trim();close();
-      var np=newPlay({cancha:b.getAttribute('data-c'),nombre:nm||(t('newName')+' '+(ST.plays.length+1))});np.nuevo=true;
+      var np=newPlay({cancha:b.getAttribute('data-c'),nombre:nm||(t('newName')+' '+(ST.plays.length+1)),etiquetas:selT.slice()});np.nuevo=true;
       ST.plays.unshift(np);ST.cur=np.id;ST.fr=0;ST.hist=[];ST.redo=[];ST.sel=[];ST.selStroke=null;ST.place=null;ST.tool='mover';ST.scr='edit';save(true);draw();return;}
     if(e.target===w||e.target.getAttribute('data-x'))close();});
   setTimeout(function(){var i=w.querySelector('input');if(i)i.focus();},30);
@@ -8948,7 +8967,7 @@ function createFlow(){
 
 /* — VER (reproducir) — */
 var V={job:0,fi:0,raf:0};
-function expGrp(){return '<span class="pz-grp"><button class="pz-btn sm" data-a="pdf">'+t('pdf')+'</button><button class="pz-btn sm" data-a="jpg">'+t('jpg')+'</button></span>';}
+function expGrp(){return '<span class="pz-grp"><button class="pz-btn sm" data-a="pdf">'+t('pdf')+'</button><button class="pz-btn sm" data-a="png">'+t('png')+'</button></span>';}
 function viewHTML(p){
   return '<div class="pz-eh"><button class="pz-btn sm" data-a="back">'+ic('back',14)+t('back')+'</button><b class="pz-vt">'+esc(p.nombre)+'</b><div class="pz-grow"></div>'+
   '<label class="pz-inl">'+t('speed')+'<select data-f="speed">'+[.5,1,1.5,2].map(function(s){return '<option value="'+s+'"'+(ST.speed===s?' selected':'')+'>'+s+'×</option>';}).join('')+'</select></label>'+
@@ -9094,7 +9113,9 @@ function actions(a,el,e){
    case 'mirror':if(p){pushH();p.cuadros.forEach(function(f){OID.concat(DID).forEach(function(id){if(f.f[id])f.f[id][1]=r2(W-f.f[id][1]);});if(f.b)f.b[1]=r2(W-f.b[1]);(f.t||[]).forEach(function(s){s.p=s.p.map(function(q3){return [q3[0],r2(W-q3[1])];});});});touch(p);draw();}break;
    case 'side':if(p){pushH();p.cuadros.forEach(function(f){OID.concat(DID).forEach(function(id){if(f.f[id])f.f[id]=[r2(L-f.f[id][0]),r2(W-f.f[id][1])];});if(f.b)f.b=[r2(L-f.b[0]),r2(W-f.b[1])];(f.t||[]).forEach(function(s){s.p=s.p.map(function(q4){return [r2(L-q4[0]),r2(W-q4[1])];});});});if(p.cancha==='half')p.lado=p.lado==='R'?'L':'R';touch(p);draw();}break;
    case 'pdf':exportSheets('pdf');break;
-   case 'jpg':exportSheets('jpg');break;
+   case 'pdfp':{var op=ST.plays.filter(function(x){return x.id===v;})[0];if(op)exportSheets('pdf',[op],slug(op.nombre));break;}
+   case 'pdfall':exportSheets('pdf',ST.plays.slice().sort(function(a,b){return a.creada-b.creada;}),'biblioteca-'+slug(ST.equipo));break;
+   case 'png':exportPNG();break;
    case 'vplay':if(!p)break;if(ST.playing)stopAnim();else playAll(p);break;
    case 'vnext':if(p&&V.fi<p.cuadros.length-1){stopAnim();moveTo(p,V.fi+1);}break;
    case 'vprev':if(p&&V.fi>0){stopAnim();showFrame(p,V.fi-1,true);}break;
@@ -9107,33 +9128,47 @@ function actions(a,el,e){
 function svgToImg(svg,w,h){return new Promise(function(res,rej){var img=new Image(),u=URL.createObjectURL(new Blob([svg.replace('<svg ','<svg width="'+w+'" height="'+h+'" ')],{type:'image/svg+xml;charset=utf-8'}));img.onload=function(){URL.revokeObjectURL(u);res(img);};img.onerror=function(){URL.revokeObjectURL(u);rej(new Error('svg'));};img.src=u;});}
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function wrapTxt(c,txt,maxW,maxL){var w=String(txt||'').split(/\s+/),ln=[],cu='';w.forEach(function(x){var tt=cu?cu+' '+x:x;if(c.measureText(tt).width>maxW&&cu){ln.push(cu);cu=x;}else cu=tt;});if(cu)ln.push(cu);if(ln.length>maxL){ln=ln.slice(0,maxL);ln[maxL-1]=ln[maxL-1].replace(/\s*\S*$/,'')+'…';}return ln;}
-function buildSheets(p){
-  var S=2,PW=1754,PH=1240,mx=64,top=150,bot=1118,per=6,n=p.cuadros.length,pages=Math.ceil(n/per),v=mkView(p),ar=v.w/v.h,list=[];
-  for(var g=0;g<pages;g++)list.push(g);
-  var chain=Promise.resolve(),out=[];
-  list.forEach(function(g){chain=chain.then(function(){
-    var fr=p.cuadros.slice(g*per,g*per+per),cnt=fr.length,cols=cnt<=1?1:(cnt<=4?2:3),rows=Math.ceil(cnt/cols),gap=26,cap=cnt<=2?84:64;
-    var cw=(PW-2*mx-(cols-1)*gap)/cols,ch=(bot-top-(rows-1)*gap)/rows,iw=cw,ih=ch-cap,w=Math.min(iw,ih*ar),h=w/ar;
+function cropAR(p){var m=p.cancha==='full',cp=.12;return m?(L+2*cp)/(W+2*cp):(W+2*cp)/(L/2+2*cp);}
+/* PLAYBOOK: filas de jugadas, con todos los cuadros de cada una uno al lado del otro */
+function buildPlaybook(plays){
+  var S=2,PW=1754,PH=1240,mx=64,top=150,bot=1128,gap=14,titleH=34,rowGap=16,RH=190,availW=PW-2*mx;
+  var rows=plays.map(function(p){var ar=cropAR(p),n=p.cuadros.length,h=Math.min(RH,(availW-gap*(n-1))/(ar*n));return {p:p,ar:ar,n:n,h:h,H:h+titleH+rowGap};});
+  var pages=[],cu=[],used=0,room=bot-top;
+  rows.forEach(function(r){if(used+r.H>room&&cu.length){pages.push(cu);cu=[];used=0;}cu.push(r);used+=r.H;});
+  if(cu.length)pages.push(cu);
+  var title='PLAYBOOK '+String(ST.equipo||'').toUpperCase(),d=new Date(),ds=('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear();
+  var out=[],chain=Promise.resolve();
+  pages.forEach(function(pg,gi){chain=chain.then(function(){
     var cv=document.createElement('canvas');cv.width=PW*S;cv.height=PH*S;var c=cv.getContext('2d');c.scale(S,S);
-    c.fillStyle='#fff';c.fillRect(0,0,PW,PH);
-    c.fillStyle='#0f172a';c.font='700 38px Arial,Helvetica,sans-serif';c.textBaseline='alphabetic';c.fillText(p.nombre,mx,86);
-    c.fillStyle='#64748b';c.font='400 20px Arial,Helvetica,sans-serif';var d=new Date(),meta=(ST.equipo||'')+'  ·  '+n+' '+t('frames')+'  ·  '+('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear();c.fillText(meta,mx,118);
-    c.fillStyle='#f97316';c.fillRect(mx,132,64,4);
+    c.fillStyle='#fff';c.fillRect(0,0,PW,PH);c.textAlign='left';c.textBaseline='alphabetic';
+    c.fillStyle='#0f172a';c.font='800 44px Arial,Helvetica,sans-serif';try{c.letterSpacing='3px';}catch(e){}c.fillText(title,mx,92);try{c.letterSpacing='0px';}catch(e){}
+    c.fillStyle='#f97316';c.fillRect(mx,108,72,5);
+    c.fillStyle='#64748b';c.font='400 20px Arial,Helvetica,sans-serif';c.textAlign='right';c.fillText(ds+(pages.length>1?'   ·   '+(gi+1)+' / '+pages.length:''),PW-mx,92);c.textAlign='left';
     c.fillStyle='#e2e8f0';c.fillRect(mx,1150,PW-2*mx,1.5);
-    c.fillStyle='#0f172a';c.font='800 24px Arial,Helvetica,sans-serif';c.textAlign='center';try{c.letterSpacing='9px';}catch(e){}c.fillText('BASINGAME',PW/2+4,1196);try{c.letterSpacing='0px';}catch(e){}
-    if(pages>1){c.fillStyle='#94a3b8';c.font='400 18px Arial,Helvetica,sans-serif';c.textAlign='right';c.fillText((g+1)+' / '+pages,PW-mx,1196);}
-    c.textAlign='left';
-    var jobs=fr.map(function(f,i){var x=mx+(i%cols)*(cw+gap),y=top+Math.floor(i/cols)*(ch+gap);
-      return svgToImg(renderCourt(p,g*per+i,{}),Math.round(w*S),Math.round(h*S)).then(function(img){
-        var ox=x+(cw-w)/2;c.save();rr(c,ox,y,w,h,10);c.clip();c.drawImage(img,ox,y,w,h);c.restore();c.strokeStyle='#cbd5e1';c.lineWidth=1.2;rr(c,ox,y,w,h,10);c.stroke();
-        var gi=g*per+i,ty=y+h+(cnt<=2?30:24);c.fillStyle='#0f172a';c.font='700 '+(cnt<=2?22:18)+'px Arial,Helvetica,sans-serif';
-        if(n>1)c.fillText(t('frame')+' '+(gi+1),ox,ty);
-        c.fillStyle='#475569';c.font='400 '+(cnt<=2?19:15)+'px Arial,Helvetica,sans-serif';
-        var off=n>1?(cnt<=2?118:96):0;wrapTxt(c,f.nota,w-off-4,cnt<=2?2:1).forEach(function(l,k){c.fillText(l,ox+off,ty+(k?(cnt<=2?24:20):0));});
-      });});
+    c.fillStyle='#0f172a';c.font='800 24px Arial,Helvetica,sans-serif';c.textAlign='center';try{c.letterSpacing='9px';}catch(e){}c.fillText('BASINGAME',PW/2+4,1196);try{c.letterSpacing='0px';}catch(e){}c.textAlign='left';
+    var y=top,jobs=[];
+    pg.forEach(function(r){
+      var ty=y+22,p=r.p;c.fillStyle='#0f172a';c.font='700 21px Arial,Helvetica,sans-serif';c.fillText(p.nombre,mx,ty);
+      var nw=c.measureText(p.nombre).width;
+      if(p.etiquetas&&p.etiquetas.length){c.fillStyle='#94a3b8';c.font='400 15px Arial,Helvetica,sans-serif';c.fillText(p.etiquetas.join(' · '),mx+nw+14,ty);}
+      var fw=r.h*r.ar,iy=y+titleH,rowY=iy;
+      p.cuadros.forEach(function(f,i){var ix=mx+i*(fw+gap);
+        jobs.push(svgToImg(renderCourt(p,i,{crop:true}),Math.round(fw*S),Math.round(r.h*S)).then(function(img){
+          c.save();rr(c,ix,rowY,fw,r.h,6);c.clip();c.drawImage(img,ix,rowY,fw,r.h);c.restore();c.strokeStyle='#cbd5e1';c.lineWidth=1;rr(c,ix,rowY,fw,r.h,6);c.stroke();
+          if(r.n>1){c.fillStyle='#0f172a';c.beginPath();c.arc(ix+13,rowY+13,10,0,6.2832);c.fill();c.fillStyle='#fff';c.font='700 13px Arial,Helvetica,sans-serif';c.textAlign='center';c.fillText(String(i+1),ix+13,rowY+17.5);c.textAlign='left';}
+        }));});
+      y+=r.H;});
     return Promise.all(jobs).then(function(){out.push(cv);});
   });});
   return chain.then(function(){return out;});
+}
+/* PNG: solo la cancha (al borde de las líneas), cuadros uno al lado del otro, para pegar en Word */
+function exportPNG(){
+  var p=cur();if(!p)return;toast(t('making'));
+  var n=p.cuadros.length,ar=cropAR(p),fw=p.cancha==='full'?1300:820,gp=16,tot=n*fw+(n-1)*gp;if(tot>3600){fw=(3600-(n-1)*gp)/n;tot=3600;}
+  fw=Math.round(fw);tot=n*fw+(n-1)*gp;var fh=Math.round(fw/ar),cv=document.createElement('canvas');cv.width=tot;cv.height=fh;var c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,tot,fh);
+  Promise.all(p.cuadros.map(function(f,i){return svgToImg(renderCourt(p,i,{crop:true}),fw,fh).then(function(img){c.drawImage(img,i*(fw+gp),0,fw,fh);});}))
+  .then(function(){cv.toBlob(function(b){if(b)download(slug(p.nombre)+'.png',b);},'image/png');}).catch(function(){toast('⚠ error');});
 }
 function pdfFrom(pages){
   var enc=new TextEncoder(),chunks=[],off=0,xref=[],N=pages.length;
@@ -9153,16 +9188,12 @@ function pdfFrom(pages){
   str('trailer\n<< /Size '+tot+' /Root 1 0 R >>\nstartxref\n'+xo+'\n%%EOF');
   return new Blob(chunks,{type:'application/pdf'});
 }
-function exportSheets(kind){
-  var p=cur();if(!p)return;toast(t('making'));var cvs=null;
-  buildSheets(p).then(function(cs){cvs=cs;return Promise.all(cs.map(function(c){return new Promise(function(r){c.toBlob(r,'image/jpeg',.92);});}));})
-  .then(function(blobs){
-    if(kind==='jpg'){blobs.forEach(function(b,i){setTimeout(function(){download(slug(p.nombre)+(blobs.length>1?'-'+(i+1):'')+'.jpg',b);},i*350);});return;}
-    return Promise.all(blobs.map(function(b){return b.arrayBuffer();})).then(function(bufs){
-      download(slug(p.nombre)+'.pdf',pdfFrom(bufs.map(function(a,i){return {bytes:new Uint8Array(a),w:cvs[i].width,h:cvs[i].height};})));});})
-  .catch(function(){toast('⚠ error');});
+function exportSheets(kind,list,name){
+  var ps=(list||[cur()]).filter(Boolean);if(!ps.length)return;toast(t('making'));
+  buildPlaybook(ps).then(function(cs){
+    return Promise.all(cs.map(function(c){return new Promise(function(r){c.toBlob(r,'image/jpeg',.92);}).then(function(b){return b.arrayBuffer().then(function(a){return {bytes:new Uint8Array(a),w:c.width,h:c.height};});});}));
+  }).then(function(pages){download((name||slug(ps[0].nombre))+'.pdf',pdfFrom(pages));}).catch(function(){toast('⚠ error');});
 }
-
 /* ═══ interacción del editor (Pointer Events) ═══ */
 var D=null;
 function sPt(e,svg){var pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;var q=pt.matrixTransform(svg.getScreenCTM().inverse());return [q.x,q.y];}
