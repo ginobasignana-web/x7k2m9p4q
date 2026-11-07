@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>BASINGAME · Acceso privado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070d1a;--card:#0d1b33;--line:#22345a;--gold:#c8a74d;--tx:#e8edf7;--mu:#8fa0bf;--er:#ff6b6b}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:radial-gradient(1200px 600px at 50% -10%,#14284d 0,var(--bg) 60%);color:var(--tx);font-family:Barlow,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px}
+.c{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.45);text-align:center}
+.mk{font-family:Oswald,sans-serif;letter-spacing:.32em;color:var(--gold);font-size:13px;margin-bottom:22px}
+h1{font-family:Oswald,sans-serif;font-weight:600;font-size:25px;margin:0 0 4px;letter-spacing:.02em}
+.sub{color:var(--mu);font-size:15px;margin-bottom:22px}
+input{width:100%;padding:13px 14px;border-radius:9px;border:1px solid var(--line);background:#081226;color:var(--tx);font-size:17px;letter-spacing:.08em;text-align:center;outline:none}
+input:focus{border-color:var(--gold)}
+button{margin-top:14px;width:100%;padding:13px;border:0;border-radius:9px;background:var(--gold);color:#1a1405;font-family:Oswald,sans-serif;font-size:16px;letter-spacing:.14em;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+.er{color:var(--er);min-height:20px;margin-top:12px;font-size:14px}
+.vg{color:var(--mu);font-size:13px;margin-top:18px;line-height:1.5}
+.lock{font-size:34px;margin-bottom:6px}
+</style></head><body>
+<div class="c" id="box">
+ <div class="mk">BASINGAME</div>
+ <h1>{{CLUB}}</h1><div class="sub">{{LIGA}} · análisis avanzado</div>
+ <form id="f" autocomplete="off"><input id="k" type="password" placeholder="Clave de acceso" autocomplete="off" autofocus><button id="b" type="submit">INGRESAR</button></form>
+ <div class="er" id="e"></div>
+ <div class="vg">Acceso privado, vigente hasta el<br><b>{{VENCE_TXT}}</b></div>
+</div>
+<script id="p" type="text/plain">{{PAYLOAD}}</script>
+<script>
+(function(){
+var VENCE="{{VENCE_ISO}}",ITER={{ITER}},box=document.getElementById('box');
+function vencido(){box.innerHTML='<div class="mk">BASINGAME</div><div class="lock">🔒</div><h1>ACCESO VENCIDO</h1><div class="sub" style="margin-top:8px">El período de acceso de {{CLUB}} finalizó.<br>Para renovarlo, contactá al administrador.</div>'}
+if(Date.now()>Date.parse(VENCE)){vencido();return}
+var f=document.getElementById('f'),k=document.getElementById('k'),b=document.getElementById('b'),e=document.getElementById('e');
+function b64(s){var r=atob(s),u=new Uint8Array(r.length);for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);return u}
+f.addEventListener('submit',async function(ev){
+ ev.preventDefault();e.textContent='';
+ var clave=k.value.trim().toUpperCase();if(!clave)return;
+ if(!(window.crypto&&crypto.subtle&&window.DecompressionStream)){e.textContent='Este navegador es muy antiguo. Abrilo con una versión reciente de Chrome, Safari o Edge.';return}
+ b.disabled=true;b.textContent='VERIFICANDO…';
+ try{
+  var raw=b64(document.getElementById('p').textContent.trim()),sal=raw.slice(0,16),iv=raw.slice(16,28),ct=raw.slice(28);
+  var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(clave),'PBKDF2',false,['deriveKey']);
+  var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:sal,iterations:ITER,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+  var buf=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv,additionalData:new TextEncoder().encode(VENCE)},key,ct);
+  var html=await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  document.open();document.write(html);document.close();
+ }catch(x){e.textContent='Clave incorrecta. Revisala e intentá de nuevo.';b.disabled=false;b.textContent='INGRESAR';k.select()}
+});
+})();
+</script></body></html>

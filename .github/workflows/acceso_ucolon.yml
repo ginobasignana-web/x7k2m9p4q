@@ -1,0 +1,38 @@
+name: Acceso privado - La Union de Colon
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  push:
+    paths:
+      - 'liga_argentina_analytics.html'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: acceso-ucolon
+  cancel-in-progress: false
+jobs:
+  acceso:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install cryptography
+      - name: Armar el acceso
+        env:
+          ACCESO_CLAVE: ${{ secrets.ACCESO_UCOLON_CLAVE }}
+        run: python acceso_nube/acceso_nube.py ucolon
+      - name: Publicar
+        run: |
+          git config user.name "BASINGAME acceso"
+          git config user.email "acceso@basingame.local"
+          git add -A acc .acceso_estado
+          if git diff --cached --quiet; then echo "Sin cambios para publicar"; else
+            git commit -q -m "acceso ucolon (nube): actualizacion"
+            for i in 1 2 3 4; do git pull --rebase -q && git push -q && break; sleep $((i*5)); done
+          fi
