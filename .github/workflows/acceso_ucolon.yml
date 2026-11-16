@@ -1,10 +1,9 @@
 name: Acceso privado - La Union de Colon
 on:
+  # El disparador por push de liga_argentina_analytics.html se saco a proposito:
+  # la fuente ya no esta en este repo, asi que ese push no significa nada.
   schedule:
     - cron: '7,37 * * * *'
-  push:
-    paths:
-      - 'liga_argentina_analytics.html'
   workflow_dispatch:
 permissions:
   contents: write
@@ -19,6 +18,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # La materia prima (el tablero en claro) vive en el repo PRIVADO. Antes se
+      # leia de este repo publico, y eso obligaba a dejar el tablero completo del
+      # cliente a la vista de cualquiera. El token es de solo lectura y solo para
+      # ese repo.
+      - uses: actions/checkout@v4
+        with:
+          repository: ginobasignana-web/p4q8r2n7k-
+          token: ${{ secrets.FUENTE_PRIVADA_TOKEN }}
+          path: _fuente
+          fetch-depth: 1
+      - name: Que la fuente privada este y sea el tablero
+        run: |
+          F=_fuente/index.html
+          if [ ! -f "$F" ]; then echo "::error::no existe $F en el repo privado"; exit 1; fi
+          # Mismo criterio que acceso_nube.py, pero fallando con un mensaje que
+          # dice que pasa en vez de un exit 3 pelado.
+          if ! grep -q "const DATA" "$F"; then
+            echo "::error::$F no tiene const DATA: el repo privado tiene la version cifrada, no el tablero"; exit 1; fi
+          echo "fuente OK: $(wc -c < "$F") bytes"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -26,6 +44,7 @@ jobs:
       - name: Armar el acceso
         env:
           ACCESO_CLAVE: ${{ secrets.ACCESO_UCOLON_CLAVE }}
+          FUENTE_NUBE: _fuente/index.html
         run: python acceso_nube/acceso_nube.py ucolon
       - name: Publicar
         run: |

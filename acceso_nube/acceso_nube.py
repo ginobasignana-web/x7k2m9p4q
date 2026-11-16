@@ -60,13 +60,19 @@ def main():
         return
     clave = os.environ.get("ACCESO_CLAVE", "").strip()
     if not clave: log(f"[{cid}] ERROR: falta el secreto ACCESO_UCOLON_CLAVE en GitHub (Settings > Secrets and variables > Actions)"); sys.exit(1)
-    fuente = RAIZ / cfg.get("fuente_nube", "liga_argentina_analytics.html")
+    # FUENTE_NUBE la pone el workflow, apuntando al checkout del repo PRIVADO.
+    # El tablero en claro ya no vive en este repo: desde el 16/11 todos los
+    # HTML de aca estan cifrados, y este script exige `const DATA`.
+    # Sin la variable se cae al comportamiento viejo, asi que correrlo a mano
+    # contra una copia local sigue funcionando igual.
+    _fn = os.environ.get("FUENTE_NUBE", "").strip()
+    fuente = Path(_fn).resolve() if _fn else RAIZ / cfg.get("fuente_nube", "liga_argentina_analytics.html")
     if not fuente.exists(): log(f"[{cid}] ERROR: no existe {fuente.name} en el repositorio"); sys.exit(2)
     html0 = fuente.read_bytes()
     if len(html0) < 2_000_000 or b"const DATA" not in html0: log(f"[{cid}] ERROR: el HTML de origen no parece válido ({len(html0)} bytes); no se publica"); sys.exit(3)
     ts = fecha_datos(html0)
     if ts is None:
-        r = subprocess.run(["git", "-C", str(RAIZ), "log", "-1", "--format=%ct", "--", fuente.name], capture_output=True, text=True)
+        r = subprocess.run(["git", "-C", str(fuente.parent), "log", "-1", "--format=%ct", "--", fuente.name], capture_output=True, text=True)
         ts = float(r.stdout.strip()) if r.stdout.strip() else time.time()
     h0 = hashlib.sha256(html0).hexdigest()
     if est.get("fuente_hash") == h0 and est.get("clave_hash") == hashlib.sha256(clave.encode()).hexdigest() and destino.exists():
