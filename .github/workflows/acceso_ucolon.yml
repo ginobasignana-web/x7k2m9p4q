@@ -1,4 +1,6 @@
-name: Acceso privado - La Union de Colon
+# El archivo se sigue llamando acceso_ucolon.yml a proposito:
+# renombrarlo pierde el historial de corridas de este workflow.
+name: Acceso privado - clientes
 on:
   # El disparador por push de liga_argentina_analytics.html se saco a proposito:
   # la fuente ya no esta en este repo, asi que ese push no significa nada.
@@ -28,24 +30,50 @@ jobs:
           token: ${{ secrets.FUENTE_PRIVADA_TOKEN }}
           path: _fuente
           fetch-depth: 1
-      - name: Que la fuente privada este y sea el tablero
-        run: |
-          F=_fuente/index.html
-          if [ ! -f "$F" ]; then echo "::error::no existe $F en el repo privado"; exit 1; fi
-          # Mismo criterio que acceso_nube.py, pero fallando con un mensaje que
-          # dice que pasa en vez de un exit 3 pelado.
-          if ! grep -q "const DATA" "$F"; then
-            echo "::error::$F no tiene const DATA: el repo privado tiene la version cifrada, no el tablero"; exit 1; fi
-          echo "fuente OK: $(wc -c < "$F") bytes"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install cryptography
-      - name: Armar el acceso
+      # UN PASO PARA TODOS LOS CLIENTES. Antes esto era una linea clavada a
+      # ucolon, asi que un cliente nuevo obligaba a editar este archivo justo
+      # en el momento de una venta. Ahora recorre los configs: dar de alta un
+      # cliente es escribir su JSON y actualizar el secreto, nada mas.
+      #
+      # La clave sale del mapa ACCESOS_CLAVES; si falta o viene mal se cae al
+      # secreto viejo por cliente, asi el que paga no se cae por un cambio.
+      # La fuente sale del config, porque cada liga tiene su archivo en el repo
+      # privado. Las dos cosas las resuelve acceso_nube/datos_cliente.py, que se
+      # puede probar suelto; antes esto habria sido python anidado adentro de un
+      # bucle de shell, que es donde se cuelan los errores de escapado.
+      - name: Armar los accesos
         env:
-          ACCESO_CLAVE: ${{ secrets.ACCESO_UCOLON_CLAVE }}
-          FUENTE_NUBE: _fuente/index.html
-        run: python acceso_nube/acceso_nube.py ucolon
+          ACCESOS_CLAVES: ${{ secrets.ACCESOS_CLAVES }}
+          ACCESO_UCOLON_CLAVE: ${{ secrets.ACCESO_UCOLON_CLAVE }}
+        run: |
+          falto=0
+          hubo=0
+          for cfg in acceso_nube/clientes/*.json; do
+            [ -f "$cfg" ] || continue
+            hubo=1
+            cid=$(basename "$cfg" .json)
+            F="_fuente/$(python3 acceso_nube/datos_cliente.py "$cid" fuente)"
+            if [ ! -f "$F" ]; then
+              echo "::error::[$cid] no existe $F en el repo privado"; falto=1; continue
+            fi
+            if ! grep -q "const DATA" "$F"; then
+              echo "::error::[$cid] $F no tiene const DATA: el repo privado tiene la version cifrada, no el tablero"; falto=1; continue
+            fi
+            clave=$(python3 acceso_nube/datos_cliente.py "$cid" clave)
+            if [ -z "$clave" ]; then
+              echo "::error::[$cid] no hay clave: agregala con alta_cliente.py --sincronizar-secreto"; falto=1; continue
+            fi
+            echo "[$cid] fuente $F, $(wc -c < "$F") bytes"
+            ACCESO_CLAVE="$clave" FUENTE_NUBE="$F" python3 acceso_nube/acceso_nube.py "$cid" \
+              || { echo "::error::[$cid] acceso_nube.py fallo"; falto=1; }
+          done
+          [ "$hubo" = "1" ] || { echo "::error::no hay ningun cliente configurado"; exit 1; }
+          # Un cliente roto no tapa a los otros, pero la corrida queda en rojo.
+          [ "$falto" = "0" ]
       - name: Publicar
         run: |
           git config user.name "BASINGAME acceso"
