@@ -55,8 +55,25 @@ def main():
     est_f = RAIZ / ".acceso_estado" / f"{cid}.json"; est_f.parent.mkdir(exist_ok=True)
     est = json.loads(est_f.read_text()) if est_f.exists() else {}
     if datetime.datetime.now(datetime.timezone.utc) > datetime.datetime.fromisoformat(cfg["vence"]):
-        if destino.exists(): destino.unlink(); log(f"[{cid}] VENCIDO el {cfg['vence']}: acceso retirado")
-        else: log(f"[{cid}] vencido: ya estaba retirado")
+        # SE REEMPLAZA POR LA PANTALLA "ACCESO VENCIDO", no se borra. Igual que
+        # en acceso_cliente.py del lado de la Mac, y tiene que ser igual aca o
+        # no sirve de nada: la nube y la Mac publican sobre el MISMO archivo.
+        # Si una pone la pantalla y la otra la borra, gana la ultima que corra y
+        # el club termina viendo el 404 de GitHub igual.
+        #
+        # El payload va VACIO: el JS compara la fecha antes de tocarlo
+        # (if(Date.now()>Date.parse(VENCE)){vencido();return}), asi que muestra
+        # la pantalla sin descifrar nada y el archivo no lleva datos. Pasa de
+        # 3,5 MB a ~4 KB. Caduca igual de en serio, solo que avisando.
+        try:
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_text(armar_pagina(cfg, ""), encoding="utf-8")
+            log(f"[{cid}] VENCIDO el {cfg['vence']}: acceso retirado, queda la pantalla de vencido")
+        except Exception as e:
+            # Si no se puede armar la pantalla, se borra: el acceso se corta
+            # igual. Nunca queda publicado algo con datos.
+            if destino.exists(): destino.unlink()
+            log(f"[{cid}] VENCIDO el {cfg['vence']}: acceso retirado (sin pantalla: {e})")
         return
     clave = os.environ.get("ACCESO_CLAVE", "").strip()
     if not clave: log(f"[{cid}] ERROR: falta el secreto ACCESO_UCOLON_CLAVE en GitHub (Settings > Secrets and variables > Actions)"); sys.exit(1)
